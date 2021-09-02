@@ -24,6 +24,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
                 rng.gen_range(0.0..1.0),
                 rng.gen_range(0.0..1.0),
                 rng.gen_range(0.0..1.0),
+                0.1,
             ];
             mesh.count_vertices()
         ],

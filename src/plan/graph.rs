@@ -2,13 +2,48 @@ use super::{State, StateSpace};
 use bevy::render::mesh::{Indices, Mesh};
 use bevy::render::pipeline::PrimitiveTopology;
 use std::collections::BTreeSet;
+use std::collections::BinaryHeap;
+use std::fmt::Debug;
+
+// pub trait VertexSearchState: Debug + Default + Ord + PartialOrd {
+//     fn vertex_idx(&self) -> usize;
+// }
+
+// pub trait GraphSearchState {
+//     type VertexSearchState: VertexSearchState;
+
+//     fn start_with(idx: usize) -> Self::VertexSearchState;
+
+//     fn consume_adjacencies(this: usize, neighbours: &Vec) -> Self::VertexSearchState;
+// }
 
 pub struct Graph<T: StateSpace> {
     vertices: Vec<T::State>,
     adjacencies: Vec<BTreeSet<usize>>,
 }
 
-impl<T: StateSpace> Graph<T> {}
+// impl<T: StateSpace> Graph<T> {
+//     pub fn bfs<G: GraphSearchState>(&self, start: usize, finish: usize) {
+//         let mut fringe = BinaryHeap::with_capacity(self.vertices.len());
+//         fringe.push(G::VertexSearchState::default());
+//         // Local search state -> pass as arg and return
+//         // Ord on Priority Queue
+//         // Start on heap
+//         // Need to have vertex id in search state
+//         while let Some(curr) = fringe.pop() {
+//             if curr.vertex_idx() == finish {
+//                 break;
+//             }
+//             // Change state based on popping
+//             for neighbours in self.adjacencies[curr].iter() {
+//                 // If adding to fringe
+//                 // Change state based on prev and curr vertex state
+//                 // Need to have vertex id in search state
+//                 // Add to fringe
+//             }
+//         }
+//     }
+// }
 
 impl<T: StateSpace> From<Graph<T>> for Mesh {
     fn from(graph: Graph<T>) -> Mesh {
@@ -17,7 +52,7 @@ impl<T: StateSpace> From<Graph<T>> for Mesh {
             .iter()
             .map(|v| v.projection_to_3d())
             .collect();
-        let vertex_colors = vec![[1.0, 1.0, 1.0]; graph.vertices.len()];
+        let vertex_colors = vec![[1.0, 1.0, 1.0, 0.5]; graph.vertices.len()];
         let lines: Vec<u32> = graph
             .adjacencies
             .iter()
