@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use lego::*;
 
 fn main() {
     App::build()
@@ -11,16 +10,68 @@ fn main() {
         .run();
 }
 
-struct Marked;
+use lego::plan::graph::prm::PRM;
+use lego::plan::graph::FringeBasedSearch;
+use lego::plan::graph::VertexSearchState;
+use lego::*;
+use plan::planar::RectangleSpace;
+use plan::StateSpace;
 
+#[derive(Debug, Clone)]
+pub struct JumpsFromStart {
+    jumps: usize,
+    parent: Option<usize>,
+}
+
+impl VertexSearchState<RectangleSpace> for JumpsFromStart {
+    fn as_start(
+        _start_vertex_idx: usize,
+        _start_state: &<RectangleSpace as StateSpace>::State,
+    ) -> Self {
+        Self {
+            jumps: 0,
+            parent: None,
+        }
+    }
+
+    fn as_adj(
+        prev_vertex_idx: usize,
+        _prev_state: &<RectangleSpace as StateSpace>::State,
+        prev_search_state: &Self,
+        _my_vertex_idx: usize,
+        _my_state: &<RectangleSpace as StateSpace>::State,
+    ) -> Self {
+        Self {
+            jumps: prev_search_state.jumps + 1,
+            parent: Some(prev_vertex_idx),
+        }
+    }
+
+    fn cost(&self) -> f32 {
+        self.jumps as f32
+    }
+}
+
+struct Marked;
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let prm = plan::graph::prm::PRM::with_num_samples(
-        plan::planar::RectangleSpace {
+    let prm = PRM::with_num_samples(
+        RectangleSpace {
             size: Vec2::new(2.0, 3.0),
         },
         1000,
         0.2,
     );
+    let mut node = 1;
+    let search: FringeBasedSearch<RectangleSpace, JumpsFromStart> =
+        FringeBasedSearch::search(&prm.graph, 0, node);
+    let mut path = vec![node];
+    while let Some(parent) = search.vertex_search_states[&node].parent {
+        path.push(parent);
+        node = parent;
+    }
+    path = path.into_iter().rev().collect();
+    println!("{:?}", path);
+
     use bevy::render::pipeline::RenderPipeline;
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
