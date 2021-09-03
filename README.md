@@ -29,16 +29,18 @@
     - [x] Vertex = `StateSpace::State` +  `Set<VertexIdx>`
     - [x] To mesh
 - `RippleSearch` on `Graph`
+    - [x] start, stop, goal, max idxs
+    - [x] handle stop not reached -> reachable subgraph explored
     - [x] RippleSearch = Open least cost on fringe + Propagate to unexplored adjacencies and add them to fringe
     - [x] VertexSearchState = CostPriority + Propagate traits
     - [x] IndexedVertexSearchState = Ord on cost() trait fn + open min cost first + NaN cost is INF + NAN cost = NAN cost
-    - [x] Searching for a finish = may finds path to finish + may some other vertices => so same search can be used to find paths to multiple vertices
+    - [x] Searching for a stop = may finds path to stop + may some other vertices => so same search can be used to find paths to multiple vertices
     - [x] Multiple searches on a graph = State per search
     - [x] Parallelizable searches
     - [x] Large graph - small area search is inexpensive - uses sparse seach state using hashmaps
     - [x] Control initial alloc size of ripple and fringe
     - [x] Extract parents into RippleSearch
-    - [x] Get path to a goal, get path to finish, store start, finish, max idxs
+    - [x] Get path to a goal, get path to stop, store start, stop, max idxs
     - [ ] Remove Clone trait bound on vertex search state
     - [ ] Try to merge Propagate and CostPriority
     - [ ] BFS, UCS, A\* search states
@@ -63,7 +65,7 @@
     - [ ] sphere sphere
     - [ ] line-seg sphere
     - [ ] line-seg line-seg
-- problem description as composition of simple things like geometric entity, start, finish, option<obstacles>,
+- problem description as composition of simple things like geometric entity, start, goal, option<obstacles>,
 - RRT
     - [ ] sampling
     - [ ] growable

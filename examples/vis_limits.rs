@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use lego::*;
+use bricks::*;
 
 fn main() {
     App::build()

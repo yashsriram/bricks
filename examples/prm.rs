@@ -10,11 +10,11 @@ fn main() {
         .run();
 }
 
-use lego::plan::graph::prm::PRM;
-use lego::plan::graph::search::ripple::RippleSearch;
-use lego::plan::graph::search::ripple::VertexSearchState;
-use lego::plan::graph::search::ripple::{CostPriority, Propagate};
-use lego::*;
+use bricks::plan::graph::prm::PRM;
+use bricks::plan::graph::search::ripple::RippleSearch;
+use bricks::plan::graph::search::ripple::VertexSearchState;
+use bricks::plan::graph::search::ripple::{CostPriority, Propagate};
+use bricks::*;
 use plan::planar::RectangleSpace;
 use plan::StateSpace;
 
@@ -62,9 +62,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         0.2,
     );
     let search = RippleSearch::<RectangleSpace, JumpsFromStart>::try_search(&prm.graph, 27, 83);
-    println!("{:?}", search.path_to_finish());
+    println!("{:?}", search.path_to_stop());
     println!("{:?}", search.path_to(search.start_idx()));
-    println!("{:?}", search.path_to(search.finish_idx()));
+    println!("{:?}", search.path_to(search.stop_idx()));
     println!("{:?}", search.path_to(50));
     println!("{:?}", search.path_to(100));
     println!("{:?}", search.path_to(search.max_idx()));

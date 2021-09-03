@@ -69,25 +69,25 @@ pub mod ripple {
     pub struct RippleSearch<S: StateSpace, F: VertexSearchState<S>> {
         state_space: PhantomData<S>,
         start_idx: usize,
-        finish_idx: usize,
+        stop_idx: usize,
         max_idx: usize,
         vertex_parent_map: HashMap<usize, Option<usize>>,
         ripple: HashMap<usize, F>,
     }
 
     impl<S: StateSpace, F: VertexSearchState<S>> RippleSearch<S, F> {
-        pub fn try_search(graph: &Graph<S>, start_idx: usize, finish_idx: usize) -> Self {
-            Self::try_search_with_alloc(graph, start_idx, finish_idx, 1.0)
+        pub fn try_search(graph: &Graph<S>, start_idx: usize, stop_idx: usize) -> Self {
+            Self::try_search_with_alloc(graph, start_idx, stop_idx, 1.0)
         }
 
         pub fn try_search_with_alloc(
             graph: &Graph<S>,
             start_idx: usize,
-            finish_idx: usize,
+            stop_idx: usize,
             initial_alloc_frac: f32,
         ) -> Self {
             assert!(start_idx < graph.vertices.len());
-            assert!(finish_idx < graph.vertices.len());
+            assert!(stop_idx < graph.vertices.len());
             assert!(initial_alloc_frac >= 0.0);
             let collec_alloc_size = (graph.vertices.len() as f32 * initial_alloc_frac) as usize;
             let mut vertex_parent_map = HashMap::with_capacity(collec_alloc_size);
@@ -109,7 +109,7 @@ pub mod ripple {
                 ..
             }) = fringe.pop()
             {
-                if curr_idx == finish_idx {
+                if curr_idx == stop_idx {
                     break;
                 }
                 for &adj_idx in graph.vertices[curr_idx].adjacencies.iter() {
@@ -138,7 +138,7 @@ pub mod ripple {
             RippleSearch {
                 state_space: PhantomData,
                 start_idx: start_idx,
-                finish_idx: finish_idx,
+                stop_idx: stop_idx,
                 max_idx: graph.vertices.len() - 1,
                 vertex_parent_map: vertex_parent_map,
                 ripple: ripple,
@@ -149,16 +149,16 @@ pub mod ripple {
             self.start_idx
         }
 
-        pub fn finish_idx(&self) -> usize {
-            self.finish_idx
+        pub fn stop_idx(&self) -> usize {
+            self.stop_idx
         }
 
         pub fn max_idx(&self) -> usize {
             self.max_idx
         }
 
-        pub fn path_to_finish(&self) -> Option<Vec<usize>> {
-            self.path_to(self.finish_idx)
+        pub fn path_to_stop(&self) -> Option<Vec<usize>> {
+            self.path_to(self.stop_idx)
         }
 
         pub fn path_to(&self, goal_idx: usize) -> Option<Vec<usize>> {
