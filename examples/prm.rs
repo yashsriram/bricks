@@ -11,9 +11,9 @@ fn main() {
 }
 
 use lego::plan::graph::prm::PRM;
-use lego::plan::graph::search::fringe::FringeBasedSearch;
-use lego::plan::graph::search::fringe::VertexSearchState;
-use lego::plan::graph::search::fringe::{CostBasedPriority, Propagate};
+use lego::plan::graph::search::ripple::RippleSearch;
+use lego::plan::graph::search::ripple::VertexSearchState;
+use lego::plan::graph::search::ripple::{CostPriority, Propagate};
 use lego::*;
 use plan::planar::RectangleSpace;
 use plan::StateSpace;
@@ -21,10 +21,9 @@ use plan::StateSpace;
 #[derive(Debug, Clone)]
 pub struct JumpsFromStart {
     jumps: usize,
-    parent: Option<usize>,
 }
 
-impl CostBasedPriority for JumpsFromStart {
+impl CostPriority for JumpsFromStart {
     fn cost(&self) -> f32 {
         self.jumps as f32
     }
@@ -35,14 +34,11 @@ impl Propagate<RectangleSpace> for JumpsFromStart {
         _start_vertex_idx: usize,
         _start_state: &<RectangleSpace as StateSpace>::State,
     ) -> Self {
-        Self {
-            jumps: 0,
-            parent: None,
-        }
+        Self { jumps: 0 }
     }
 
     fn as_adj(
-        prev_vertex_idx: usize,
+        _prev_vertex_idx: usize,
         _prev_state: &<RectangleSpace as StateSpace>::State,
         _my_vertex_idx: usize,
         _my_state: &<RectangleSpace as StateSpace>::State,
@@ -50,7 +46,6 @@ impl Propagate<RectangleSpace> for JumpsFromStart {
     ) -> Self {
         Self {
             jumps: prev_search_state.jumps + 1,
-            parent: Some(prev_vertex_idx),
         }
     }
 }
@@ -66,16 +61,13 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         1000,
         0.2,
     );
-    let mut node = 1;
-    let search: FringeBasedSearch<RectangleSpace, JumpsFromStart> =
-        FringeBasedSearch::search(&prm.graph, 0, node);
-    let mut path = vec![node];
-    while let Some(parent) = search.vertex_search_states[&node].parent {
-        path.push(parent);
-        node = parent;
-    }
-    path = path.into_iter().rev().collect();
-    println!("{:?}", path);
+    let search = RippleSearch::<RectangleSpace, JumpsFromStart>::try_search(&prm.graph, 27, 83);
+    println!("{:?}", search.path_to_finish());
+    println!("{:?}", search.path_to(search.start_idx()));
+    println!("{:?}", search.path_to(search.finish_idx()));
+    println!("{:?}", search.path_to(50));
+    println!("{:?}", search.path_to(100));
+    println!("{:?}", search.path_to(search.max_idx()));
 
     use bevy::render::pipeline::RenderPipeline;
     commands.spawn_bundle(MeshBundle {

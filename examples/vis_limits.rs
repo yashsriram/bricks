@@ -31,7 +31,8 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     );
     let mesh = meshes.add(mesh);
     use bevy::render::pipeline::RenderPipeline;
-    for _ in 0..10000 {
+    // 10_000 should give ~30FPS
+    for _ in 0..10_000 {
         commands
             .spawn_bundle(MeshBundle {
                 mesh: mesh.clone(),

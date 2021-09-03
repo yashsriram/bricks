@@ -17,6 +17,7 @@
     - [ ] source code
     - [ ] demos
 - [x] wireframe viz: lines, color, 3D Perspective FPS camera, minimal, speed (stress test)
+    - [ ] Make several vis limits demos
 - `State`, `StateSpace`
     - [x] Traits
     - [x] RectangularSpace
@@ -27,14 +28,20 @@
     - [x] On a `StateSpace`
     - [x] Vertex = `StateSpace::State` +  `Set<VertexIdx>`
     - [x] To mesh
-- Fringe based search
-    - [x] VertexSearchState = CostBasedPriority + Propagate traits
+- `RippleSearch` on `Graph`
+    - [x] RippleSearch = Open least cost on fringe + Propagate to unexplored adjacencies and add them to fringe
+    - [x] VertexSearchState = CostPriority + Propagate traits
     - [x] IndexedVertexSearchState = Ord on cost() trait fn + open min cost first + NaN cost is INF + NAN cost = NAN cost
-    - [x] FringeBasedSearch = Collection of search states + Is vertex explored or not
+    - [x] Searching for a finish = may finds path to finish + may some other vertices => so same search can be used to find paths to multiple vertices
     - [x] Multiple searches on a graph = State per search
     - [x] Parallelizable searches
-    - [x] Large graph small area search should be inexpensive
-    - [ ] Get path from FringeBasedSearch
+    - [x] Large graph - small area search is inexpensive - uses sparse seach state using hashmaps
+    - [x] Control initial alloc size of ripple and fringe
+    - [x] Extract parents into RippleSearch
+    - [x] Get path to a goal, get path to finish, store start, finish, max idxs
+    - [ ] Remove Clone trait bound on vertex search state
+    - [ ] Try to merge Propagate and CostPriority
+    - [ ] BFS, UCS, A\* search states
 - PRM
     - [x] Create a `Graph<StateSpace>`
     - [x] Sampling from `StateSpace`
