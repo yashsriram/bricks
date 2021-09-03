@@ -13,6 +13,7 @@ fn main() {
 use lego::plan::graph::prm::PRM;
 use lego::plan::graph::search::FringeBasedSearch;
 use lego::plan::graph::search::VertexSearchState;
+use lego::plan::graph::search::{Cost, Propagate};
 use lego::*;
 use plan::planar::RectangleSpace;
 use plan::StateSpace;
@@ -23,7 +24,13 @@ pub struct JumpsFromStart {
     parent: Option<usize>,
 }
 
-impl VertexSearchState<RectangleSpace> for JumpsFromStart {
+impl Cost for JumpsFromStart {
+    fn cost(&self) -> f32 {
+        self.jumps as f32
+    }
+}
+
+impl Propagate<RectangleSpace> for JumpsFromStart {
     fn as_start(
         _start_vertex_idx: usize,
         _start_state: &<RectangleSpace as StateSpace>::State,
@@ -37,20 +44,18 @@ impl VertexSearchState<RectangleSpace> for JumpsFromStart {
     fn as_adj(
         prev_vertex_idx: usize,
         _prev_state: &<RectangleSpace as StateSpace>::State,
-        prev_search_state: &Self,
         _my_vertex_idx: usize,
         _my_state: &<RectangleSpace as StateSpace>::State,
+        prev_search_state: &Self,
     ) -> Self {
         Self {
             jumps: prev_search_state.jumps + 1,
             parent: Some(prev_vertex_idx),
         }
     }
-
-    fn cost(&self) -> f32 {
-        self.jumps as f32
-    }
 }
+
+impl VertexSearchState<RectangleSpace> for JumpsFromStart {}
 
 struct Marked;
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {

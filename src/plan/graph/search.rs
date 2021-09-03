@@ -6,19 +6,23 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
-pub trait VertexSearchState<S: StateSpace>: Debug + Clone {
+pub trait Cost {
+    fn cost(&self) -> f32;
+}
+
+pub trait Propagate<S: StateSpace> {
     fn as_start(start_vertex_idx: usize, start_state: &S::State) -> Self;
 
     fn as_adj(
         prev_vertex_idx: usize,
         prev_state: &S::State,
-        prev_search_state: &Self,
         my_vertex_idx: usize,
         my_state: &S::State,
+        prev_search_state: &Self,
     ) -> Self;
-
-    fn cost(&self) -> f32;
 }
+
+pub trait VertexSearchState<S: StateSpace>: Debug + Clone + Cost + Propagate<S> {}
 
 struct IndexedVertexSearchState<S: StateSpace, F: VertexSearchState<S>> {
     state_space: PhantomData<S>,
@@ -95,9 +99,9 @@ impl<S: StateSpace, F: VertexSearchState<S>> FringeBasedSearch<S, F> {
                         F::as_adj(
                             curr_idx,
                             &curr_vertex.state,
-                            &curr_search_state,
                             adj_idx,
                             &adj_vertex.state,
+                            &curr_search_state,
                         ),
                     );
                     fringe.push(IndexedVertexSearchState {
