@@ -11,8 +11,8 @@ fn main() {
 }
 
 use lego::plan::graph::prm::PRM;
-use lego::plan::graph::FringeBasedSearch;
-use lego::plan::graph::VertexSearchState;
+use lego::plan::graph::search::FringeBasedSearch;
+use lego::plan::graph::search::VertexSearchState;
 use lego::*;
 use plan::planar::RectangleSpace;
 use plan::StateSpace;
