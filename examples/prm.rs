@@ -11,9 +11,9 @@ fn main() {
 }
 
 use lego::plan::graph::prm::PRM;
-use lego::plan::graph::search::FringeBasedSearch;
-use lego::plan::graph::search::VertexSearchState;
-use lego::plan::graph::search::{Cost, Propagate};
+use lego::plan::graph::search::fringe::FringeBasedSearch;
+use lego::plan::graph::search::fringe::VertexSearchState;
+use lego::plan::graph::search::fringe::{CostBasedPriority, Propagate};
 use lego::*;
 use plan::planar::RectangleSpace;
 use plan::StateSpace;
@@ -24,7 +24,7 @@ pub struct JumpsFromStart {
     parent: Option<usize>,
 }
 
-impl Cost for JumpsFromStart {
+impl CostBasedPriority for JumpsFromStart {
     fn cost(&self) -> f32 {
         self.jumps as f32
     }

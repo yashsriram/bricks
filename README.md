@@ -1,3 +1,74 @@
+### sanity check
+- [ ] Small, simple, clear, useful, usable, independent, composable problems. No big problem. Big problem -> Compose(smaller problems).
+- [ ] Decently thought about and provable (guarantees (correctness, time, space usage, ...), bounds, ...) solutions.
+- [ ] Starting should consist mostly of what I already know, don't wait too much (it will be endless process otherwise).
+    - The notion of independent starts, saaga deyyali ante entayna saaga deyyochu 0-1 lopala, but you want to get to 1, you are already at 1.
+- [ ] Scalable (give bounds), Parallelize (when possible).
+- [ ] Visualizable.
+- [ ] Testable, get lots of good testcases.
+    - Try to avoid "natural looking" motion generation problems.
+- [ ] Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
+- [ ] Teachable to others, learnable by others.
+- [ ] Implement it in Rust and other good langagues (try to avoid C++).
+
+### roadmap
+- [ ] Demos until now
+- [ ] consume <- motion-planning repo
+    - [ ] source code
+    - [ ] demos
+- [x] wireframe viz: lines, color, 3D Perspective FPS camera, minimal, speed (stress test)
+- `State`, `StateSpace`
+    - [x] Traits
+    - [x] RectangularSpace
+    - [ ] CircularSpace
+    - [ ] CuboidSpace
+    - [ ] SphereSpace
+- `Graph`
+    - [x] On a `StateSpace`
+    - [x] Vertex = `StateSpace::State` +  `Set<VertexIdx>`
+    - [x] To mesh
+- Fringe based search
+    - [x] VertexSearchState = CostBasedPriority + Propagate traits
+    - [x] IndexedVertexSearchState = Ord on cost() trait fn + open min cost first + NaN cost is INF + NAN cost = NAN cost
+    - [x] FringeBasedSearch = Collection of search states + Is vertex explored or not
+    - [x] Multiple searches on a graph = State per search
+    - [x] Parallelizable searches
+    - [x] Large graph small area search should be inexpensive
+    - [ ] Get path from FringeBasedSearch
+- PRM
+    - [x] Create a `Graph<StateSpace>`
+    - [x] Sampling from `StateSpace`
+    - [x] Connecting `Vertices<State>` using dist() trait fn and edge len
+    - [x] Multi (agent) searchable from `Graph`
+    - [ ] Spatial data structure
+    - [ ] Growable
+    - [ ] Modifiable (vertex and edge culling)
+- actual problem to geometric search problem formulation
+- meshes, transform, drawing options
+- geometric entity description
+    - [ ] Sphere
+    - [ ] Line
+- single state intersections (instantaneous)
+    - [ ] sphere sphere
+    - [ ] line-seg sphere
+    - [ ] line-seg line-seg
+- interval state intersections (ccd)
+    - [ ] sphere sphere
+    - [ ] line-seg sphere
+    - [ ] line-seg line-seg
+- problem description as composition of simple things like geometric entity, start, finish, option<obstacles>,
+- RRT
+    - [ ] sampling
+    - [ ] growable
+    - [ ] searches
+- RRT\*
+    - [ ] sampling
+    - [ ] growable
+    - [ ] searches
+- Crowds
+    - [ ] Boids
+    - [ ] TTC
+
 #### viz tools
 graphics-viz, rust libs create/contribute.
 1. Visualizer as alternatives for rviz and other robot vis utility tools.
@@ -63,63 +134,3 @@ graphics-viz, rust libs create/contribute.
 #### ctrl
 - control crate, controls dyna models.
 1. Speedup stuff e.g. Parallelization.
-
-### sanity check
-- [ ] Small, simple, clear, independent problems rather than a big problem. Increment problem as we go.
-- [ ] Useful, usable, rigourously understood solutions (proofs, guarantees (correctness, time, space usage, ...), bounds, ...).
-- [ ] Starting should consist mostly of what I already know, don't wait too much (it will be endless process otherwise).
-    - The notion of independent starts, saaga deyyali ante entayna saaga deyyochu 0-1 lopala, but you want to get to 1, you are already at 1.
-- [ ] Reusable, composable.
-- [ ] Scalable (give bounds), Parallelize (when possible).
-- [ ] Visualizable.
-- [ ] Testable, get lots of good testcases.
-    - Try to avoid "natural looking" motion generation problems.
-- [ ] Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
-- [ ] Teachable to others, learnable by others.
-- [ ] Implement it in Rust and other good langagues (try to avoid C++).
-
-- viz
-    - [x] lines
-    - [x] color
-    - [x] camera
-    - [x] mutability
-    - [x] prune pbr plugin
-    - [x] speed (stress test)
-- [ ] consume <- motion-planning repo
-    - [ ] source code
-    - [ ] demos
-- actual problem to geometric search problem formulation
-- meshes, transform, drawing options
-- geometric entity description
-    - [ ] Sphere
-    - [ ] Line
-- problem description
-    - [ ] geometric entity
-    - [ ] start
-    - [ ] finish
-    - [ ] option<obstacles>
-- single state intersections (instantaneous)
-    - [ ] sphere sphere
-    - [ ] line-seg sphere
-    - [ ] line-seg line-seg
-- interval state intersections (ccd)
-    - [ ] sphere sphere
-    - [ ] line-seg sphere
-    - [ ] line-seg line-seg
-- [ ] Graph searches<Vertex<_, _>, CostFn(Vec<f32>, Vec<f32>) -> f32>
-- PRM
-    - [ ] sampling
-    - [ ] growable
-    - [ ] multi (agent) searchable
-    - [ ] modifiable (vertex attributes, vertex and edge culling)
-- RRT
-    - [ ] sampling
-    - [ ] growable
-    - [ ] searches
-- RRT\*
-    - [ ] sampling
-    - [ ] growable
-    - [ ] searches
-- Crowds
-    - [ ] Boids
-    - [ ] TTC

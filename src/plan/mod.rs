@@ -1,3 +1,4 @@
+use bevy::render::mesh::Mesh;
 use std::fmt::Debug;
 
 pub mod graph;
@@ -8,7 +9,7 @@ pub trait State: Debug {
     fn projection_to_3d(&self) -> [f32; 3];
 }
 
-pub trait StateSpace: Debug {
+pub trait StateSpace: Debug + Into<Mesh> {
     type State: State;
 
     fn sample_batch(&self, num_samples: usize) -> Vec<Self::State>;
