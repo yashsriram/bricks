@@ -8,12 +8,8 @@ pub mod ripple {
     use std::fmt::Debug;
     use std::marker::PhantomData;
 
-    pub trait CostPriority {
-        fn cost(&self) -> f32;
-    }
-
-    pub trait Propagate<S: StateSpace> {
-        fn as_start(start_vertex_idx: usize, start_state: &S::State) -> Self;
+    pub trait Propagate<S: StateSpace>: Debug + Sized {
+        fn as_start(start_vertex_idx: usize, start_state: &S::State) -> (f32, Self);
 
         fn as_adj(
             prev_vertex_idx: usize,
@@ -21,32 +17,26 @@ pub mod ripple {
             my_vertex_idx: usize,
             my_state: &S::State,
             prev_search_state: &Self,
-        ) -> Self;
+        ) -> (f32, Self);
     }
 
-    pub trait VertexSearchState<S: StateSpace>:
-        Debug + Clone + CostPriority + Propagate<S>
-    {
+    struct CostPriority {
+        vertex_idx: usize,
+        vertex_cost: f32,
     }
 
-    struct IndexedVertexSearchState<S: StateSpace, F: VertexSearchState<S>> {
-        state_space: PhantomData<S>,
-        idx: usize,
-        vertex_search_state: F,
-    }
-
-    impl<S: StateSpace, F: VertexSearchState<S>> PartialEq for IndexedVertexSearchState<S, F> {
+    impl PartialEq for CostPriority {
         fn eq(&self, other: &Self) -> bool {
-            self.vertex_search_state.cost() == other.vertex_search_state.cost()
+            self.vertex_cost == other.vertex_cost
         }
     }
 
-    impl<S: StateSpace, F: VertexSearchState<S>> Eq for IndexedVertexSearchState<S, F> {}
+    impl Eq for CostPriority {}
 
-    impl<S: StateSpace, F: VertexSearchState<S>> Ord for IndexedVertexSearchState<S, F> {
+    impl Ord for CostPriority {
         fn cmp(&self, other: &Self) -> Ordering {
-            let other_cost = other.vertex_search_state.cost();
-            let self_cost = self.vertex_search_state.cost();
+            let other_cost = other.vertex_cost;
+            let self_cost = self.vertex_cost;
             if other_cost == f32::NAN && self_cost == f32::NAN {
                 Ordering::Equal
             } else if other_cost != f32::NAN && self_cost == f32::NAN {
@@ -59,14 +49,14 @@ pub mod ripple {
         }
     }
 
-    impl<S: StateSpace, F: VertexSearchState<S>> PartialOrd for IndexedVertexSearchState<S, F> {
+    impl PartialOrd for CostPriority {
         fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
             Some(self.cmp(other))
         }
     }
 
     #[derive(Debug)]
-    pub struct RippleSearch<S: StateSpace, F: VertexSearchState<S>> {
+    pub struct RippleSearch<S: StateSpace, F: Propagate<S>> {
         state_space: PhantomData<S>,
         start_idx: usize,
         stop_idx: usize,
@@ -75,7 +65,7 @@ pub mod ripple {
         ripple: HashMap<usize, F>,
     }
 
-    impl<S: StateSpace, F: VertexSearchState<S>> RippleSearch<S, F> {
+    impl<S: StateSpace, F: Propagate<S>> RippleSearch<S, F> {
         pub fn try_search(graph: &Graph<S>, start_idx: usize, stop_idx: usize) -> Self {
             Self::try_search_with_alloc(graph, start_idx, stop_idx, 1.0)
         }
@@ -89,23 +79,20 @@ pub mod ripple {
             assert!(start_idx < graph.vertices.len());
             assert!(stop_idx < graph.vertices.len());
             assert!(initial_alloc_frac >= 0.0);
+            let (start_cost, start_search_state) =
+                F::as_start(start_idx, &graph.vertices[start_idx].state);
             let collec_alloc_size = (graph.vertices.len() as f32 * initial_alloc_frac) as usize;
             let mut vertex_parent_map = HashMap::with_capacity(collec_alloc_size);
             vertex_parent_map.insert(start_idx, None);
             let mut ripple = HashMap::with_capacity(collec_alloc_size);
-            ripple.insert(
-                start_idx,
-                F::as_start(start_idx, &graph.vertices[start_idx].state),
-            );
+            ripple.insert(start_idx, start_search_state);
             let mut fringe = BinaryHeap::with_capacity(collec_alloc_size);
-            fringe.push(IndexedVertexSearchState {
-                idx: start_idx,
-                vertex_search_state: ripple[&start_idx].clone(),
-                state_space: PhantomData,
+            fringe.push(CostPriority {
+                vertex_idx: start_idx,
+                vertex_cost: start_cost,
             });
-            while let Some(IndexedVertexSearchState {
-                idx: curr_idx,
-                vertex_search_state: curr_search_state,
+            while let Some(CostPriority {
+                vertex_idx: curr_idx,
                 ..
             }) = fringe.pop()
             {
@@ -113,24 +100,19 @@ pub mod ripple {
                     break;
                 }
                 for &adj_idx in graph.vertices[curr_idx].adjacencies.iter() {
-                    let curr_vertex = &graph.vertices[curr_idx];
-                    let adj_vertex = &graph.vertices[adj_idx];
                     if let None = ripple.get(&adj_idx) {
-                        vertex_parent_map.insert(adj_idx, Some(curr_idx));
-                        ripple.insert(
+                        let (adj_cost, adj_search_state) = F::as_adj(
+                            curr_idx,
+                            &graph.vertices[curr_idx].state,
                             adj_idx,
-                            F::as_adj(
-                                curr_idx,
-                                &curr_vertex.state,
-                                adj_idx,
-                                &adj_vertex.state,
-                                &curr_search_state,
-                            ),
+                            &graph.vertices[adj_idx].state,
+                            &ripple[&curr_idx],
                         );
-                        fringe.push(IndexedVertexSearchState {
-                            idx: adj_idx,
-                            vertex_search_state: ripple[&adj_idx].clone(),
-                            state_space: PhantomData,
+                        vertex_parent_map.insert(adj_idx, Some(curr_idx));
+                        ripple.insert(adj_idx, adj_search_state);
+                        fringe.push(CostPriority {
+                            vertex_idx: adj_idx,
+                            vertex_cost: adj_cost,
                         });
                     }
                 }

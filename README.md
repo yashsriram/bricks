@@ -41,8 +41,7 @@
     - [x] Control initial alloc size of ripple and fringe
     - [x] Extract parents into RippleSearch
     - [x] Get path to a goal, get path to stop, store start, stop, max idxs
-    - [ ] Remove Clone trait bound on vertex search state
-    - [ ] Try to merge Propagate and CostPriority
+    - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority
     - [ ] BFS, UCS, A\* search states
 - PRM
     - [x] Create a `Graph<StateSpace>`

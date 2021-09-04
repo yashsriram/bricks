@@ -1,4 +1,10 @@
 use bevy::prelude::*;
+use bricks::plan::graph::prm::PRM;
+use bricks::plan::graph::search::ripple::Propagate;
+use bricks::plan::graph::search::ripple::RippleSearch;
+use bricks::plan::planar::RectangleSpace;
+use bricks::plan::StateSpace;
+use bricks::*;
 
 fn main() {
     App::build()
@@ -6,35 +12,21 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_plugins(BasePlugins)
         .add_startup_system(setup.system())
-        .add_system(update.system())
         .run();
 }
-
-use bricks::plan::graph::prm::PRM;
-use bricks::plan::graph::search::ripple::RippleSearch;
-use bricks::plan::graph::search::ripple::VertexSearchState;
-use bricks::plan::graph::search::ripple::{CostPriority, Propagate};
-use bricks::*;
-use plan::planar::RectangleSpace;
-use plan::StateSpace;
 
 #[derive(Debug, Clone)]
 pub struct JumpsFromStart {
     jumps: usize,
 }
 
-impl CostPriority for JumpsFromStart {
-    fn cost(&self) -> f32 {
-        self.jumps as f32
-    }
-}
-
 impl Propagate<RectangleSpace> for JumpsFromStart {
     fn as_start(
         _start_vertex_idx: usize,
         _start_state: &<RectangleSpace as StateSpace>::State,
-    ) -> Self {
-        Self { jumps: 0 }
+    ) -> (f32, Self) {
+        let me = Self { jumps: 0 };
+        (me.jumps as f32, me)
     }
 
     fn as_adj(
@@ -43,14 +35,13 @@ impl Propagate<RectangleSpace> for JumpsFromStart {
         _my_vertex_idx: usize,
         _my_state: &<RectangleSpace as StateSpace>::State,
         prev_search_state: &Self,
-    ) -> Self {
-        Self {
+    ) -> (f32, Self) {
+        let me = Self {
             jumps: prev_search_state.jumps + 1,
-        }
+        };
+        (me.jumps as f32, me)
     }
 }
-
-impl VertexSearchState<RectangleSpace> for JumpsFromStart {}
 
 struct Marked;
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
@@ -86,10 +77,4 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
             ..Default::default()
         })
         .insert(Marked);
-}
-
-fn update(time: Res<Time>, mut query: Query<(&mut Transform, &Marked)>) {
-    // for (mut transform, _) in query.iter_mut() {
-    //     transform.translation += Vec3::new(1.0, 0.0, 0.0) * time.delta_seconds();
-    // }
 }
