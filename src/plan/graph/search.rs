@@ -1,4 +1,4 @@
-pub mod ripple {
+pub mod tree {
     use super::super::Graph;
     use crate::plan::{State, StateSpace};
     use bevy::render::mesh::{Indices, Mesh};
@@ -9,14 +9,14 @@ pub mod ripple {
     use std::fmt::Debug;
 
     pub trait Propagate<S: StateSpace>: Debug + Sized {
-        fn as_start(start_vertex_idx: usize, start_state: &S::State) -> (f32, Self);
+        fn as_start(my_vertex_idx: usize, my_vertex_state: &S::State) -> (f32, Self);
 
         fn as_adj(
             prev_vertex_idx: usize,
-            prev_state: &S::State,
+            prev_vertex_state: &S::State,
             my_vertex_idx: usize,
-            my_state: &S::State,
-            prev_search_state: &Self,
+            my_vertex_state: &S::State,
+            parent: &Self,
         ) -> (f32, Self);
     }
 
@@ -56,15 +56,15 @@ pub mod ripple {
     }
 
     #[derive(Debug)]
-    pub struct RippleSearch<'a, S: StateSpace, F: Propagate<S>> {
+    pub struct TreeSearch<'a, S: StateSpace, F: Propagate<S>> {
         graph: &'a Graph<S>,
         start_idx: usize,
         stop_idx: usize,
-        vertex_parent_map: HashMap<usize, Option<usize>>,
-        ripple: HashMap<usize, F>,
+        parent_map: HashMap<usize, Option<usize>>,
+        tree: HashMap<usize, F>,
     }
 
-    impl<'a, S: StateSpace, F: Propagate<S>> RippleSearch<'a, S, F> {
+    impl<'a, S: StateSpace, F: Propagate<S>> TreeSearch<'a, S, F> {
         pub fn try_search(graph: &'a Graph<S>, start_idx: usize, stop_idx: usize) -> Self {
             Self::try_search_with_alloc(graph, start_idx, stop_idx, 1.0)
         }
@@ -81,10 +81,10 @@ pub mod ripple {
             let (start_cost, start_search_state) =
                 F::as_start(start_idx, &graph.vertices[start_idx].state);
             let collec_alloc_size = (graph.vertices.len() as f32 * initial_alloc_frac) as usize;
-            let mut vertex_parent_map = HashMap::with_capacity(collec_alloc_size);
-            vertex_parent_map.insert(start_idx, None);
-            let mut ripple = HashMap::with_capacity(collec_alloc_size);
-            ripple.insert(start_idx, start_search_state);
+            let mut parent_map = HashMap::with_capacity(collec_alloc_size);
+            parent_map.insert(start_idx, None);
+            let mut tree = HashMap::with_capacity(collec_alloc_size);
+            tree.insert(start_idx, start_search_state);
             let mut fringe = BinaryHeap::with_capacity(collec_alloc_size);
             fringe.push(CostPriority {
                 vertex_idx: start_idx,
@@ -99,16 +99,16 @@ pub mod ripple {
                     break;
                 }
                 for &adj_idx in graph.vertices[curr_idx].adjacencies.iter() {
-                    if let None = ripple.get(&adj_idx) {
+                    if let None = tree.get(&adj_idx) {
                         let (adj_cost, adj_search_state) = F::as_adj(
                             curr_idx,
                             &graph.vertices[curr_idx].state,
                             adj_idx,
                             &graph.vertices[adj_idx].state,
-                            &ripple[&curr_idx],
+                            &tree[&curr_idx],
                         );
-                        vertex_parent_map.insert(adj_idx, Some(curr_idx));
-                        ripple.insert(adj_idx, adj_search_state);
+                        parent_map.insert(adj_idx, Some(curr_idx));
+                        tree.insert(adj_idx, adj_search_state);
                         fringe.push(CostPriority {
                             vertex_idx: adj_idx,
                             vertex_cost: adj_cost,
@@ -116,12 +116,12 @@ pub mod ripple {
                     }
                 }
             }
-            RippleSearch {
+            TreeSearch {
                 graph: graph,
                 start_idx: start_idx,
                 stop_idx: stop_idx,
-                vertex_parent_map: vertex_parent_map,
-                ripple: ripple,
+                parent_map: parent_map,
+                tree: tree,
             }
         }
 
@@ -148,7 +148,7 @@ pub mod ripple {
             }
             let mut vertex_idx = goal_idx;
             let mut path = vec![vertex_idx];
-            while let Some(&Some(parent_idx)) = self.vertex_parent_map.get(&vertex_idx) {
+            while let Some(&Some(parent_idx)) = self.parent_map.get(&vertex_idx) {
                 path.push(parent_idx);
                 vertex_idx = parent_idx;
             }
@@ -160,11 +160,11 @@ pub mod ripple {
         }
     }
 
-    impl<'a, S: StateSpace, F: Propagate<S>> From<RippleSearch<'a, S, F>> for Mesh {
-        fn from(search: RippleSearch<'a, S, F>) -> Mesh {
+    impl<'a, S: StateSpace, F: Propagate<S>> From<TreeSearch<'a, S, F>> for Mesh {
+        fn from(search: TreeSearch<'a, S, F>) -> Mesh {
             let mut mesh = Mesh::new(PrimitiveTopology::LineList);
             let tree: Vec<(usize, usize)> = search
-                .vertex_parent_map
+                .parent_map
                 .iter()
                 .map(|(&child_idx, &parent_idx)| (child_idx, parent_idx.unwrap_or(child_idx)))
                 .collect();

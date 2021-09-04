@@ -27,17 +27,17 @@
     - [x] On a `StateSpace`
     - [x] Vertex = `StateSpace::State` +  `Set<VertexIdx>`
     - [x] To mesh
-- `RippleSearch` on `Graph`
+- `TreeSearch` on `Graph`
     - [x] start, stop, goal, max idxs
     - [x] handle stop not reached -> reachable subgraph explored
-    - [x] RippleSearch = Open least cost on fringe + Propagate to unexplored adjacencies and add them to fringe
+    - [x] TreeSearch = Open least cost on fringe + Propagate to unexplored adjacencies and add them to fringe
     - [x] VertexSearchState = CostPriority + Propagate traits
     - [x] IndexedVertexSearchState = Ord on cost() trait fn + open min cost first + NaN cost is INF + NAN cost = NAN cost
     - [x] Searching for a stop = may finds path to stop + may some other vertices => so same search can be used to find paths to multiple vertices
     - [x] Multiple searches on a graph = State per search
     - [x] Parallelizable searches
     - [x] Large graph - small area search is inexpensive - uses sparse seach state using hashmaps
-    - [x] Control initial alloc size of ripple and fringe
+    - [x] Control initial alloc size of tree and fringe
     - [x] Get path to a goal, get path to stop, store start, stop, max idxs
     - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority
     - [x] Vis
