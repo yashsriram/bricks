@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 use bricks::plan::graph::prm::PRM;
-use bricks::plan::graph::search::tree::Propagate;
+use bricks::plan::graph::search::tree::propagations::*;
 use bricks::plan::graph::search::tree::TreeSearch;
 use bricks::plan::planar::RectangleSpace;
-use bricks::plan::StateSpace;
 use bricks::*;
 
 fn main() {
@@ -15,43 +14,14 @@ fn main() {
         .run();
 }
 
-#[derive(Debug, Clone)]
-pub struct JumpsFromStart {
-    jumps: usize,
-}
-
-impl Propagate<RectangleSpace> for JumpsFromStart {
-    fn as_start(
-        _start_vertex_idx: usize,
-        _start_vertex_state: &<RectangleSpace as StateSpace>::State,
-    ) -> (f32, Self) {
-        let me = Self { jumps: 0 };
-        (me.jumps as f32, me)
-    }
-
-    fn as_adj(
-        _prev_vertex_idx: usize,
-        _prev_vertex_state: &<RectangleSpace as StateSpace>::State,
-        _my_vertex_idx: usize,
-        _my_vertex_state: &<RectangleSpace as StateSpace>::State,
-        parent: &Self,
-    ) -> (f32, Self) {
-        let me = Self {
-            jumps: parent.jumps + 1,
-        };
-        (me.jumps as f32, me)
-    }
-}
-
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let prm = PRM::with_num_samples(
-        RectangleSpace {
-            size: Vec2::new(2.0, 3.0),
-        },
-        1000,
-        0.2,
-    );
-    let search = TreeSearch::<RectangleSpace, JumpsFromStart>::try_search(&prm.graph, 27, 83);
+    let rectangular_space = RectangleSpace {
+        size: Vec2::new(5.0, 3.0),
+    };
+    let mut prm = PRM::with_num_samples(rectangular_space, 1000, 0.2);
+    let idxes = prm.add(vec![Vec2::new(0.0, 0.0), Vec2::new(2.5, 3.0)], 0.5);
+    let search =
+        TreeSearch::<RectangleSpace, JumpsFromStart>::try_search(&prm.graph, idxes[0], idxes[1]);
     println!("{:?}", search.path_to_stop());
     println!("{:?}", search.path_to(search.start_idx()));
     println!("{:?}", search.path_to(search.stop_idx()));

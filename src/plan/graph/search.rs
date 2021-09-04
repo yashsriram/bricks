@@ -8,7 +8,7 @@ pub mod tree {
     use std::collections::HashMap;
     use std::fmt::Debug;
 
-    pub trait Propagate<S: StateSpace>: Debug + Sized {
+    pub trait Propagation<S: StateSpace>: Debug + Sized {
         fn as_start(my_vertex_idx: usize, my_vertex_state: &S::State) -> (f32, Self);
 
         fn as_adj(
@@ -18,6 +18,61 @@ pub mod tree {
             my_vertex_state: &S::State,
             parent: &Self,
         ) -> (f32, Self);
+    }
+
+    pub mod propagations {
+        use super::Propagation;
+        use crate::plan::{State, StateSpace};
+
+        #[derive(Debug)]
+        pub struct JumpsFromStart {
+            jumps: usize,
+        }
+
+        impl<S: StateSpace> Propagation<S> for JumpsFromStart {
+            fn as_start(_: usize, _: &S::State) -> (f32, Self) {
+                let me = Self { jumps: 0 };
+                (me.jumps as f32, me)
+            }
+
+            fn as_adj(
+                _: usize,
+                _: &S::State,
+                _: usize,
+                _: &S::State,
+                parent: &Self,
+            ) -> (f32, Self) {
+                let me = Self {
+                    jumps: parent.jumps + 1,
+                };
+                (me.jumps as f32, me)
+            }
+        }
+
+        #[derive(Debug)]
+        pub struct DistFromStart {
+            dist: f32,
+        }
+
+        impl<S: StateSpace> Propagation<S> for DistFromStart {
+            fn as_start(_start_vertex_idx: usize, _start_vertex_state: &S::State) -> (f32, Self) {
+                let me = Self { dist: 0.0 };
+                (me.dist as f32, me)
+            }
+
+            fn as_adj(
+                _prev_vertex_idx: usize,
+                prev_vertex_state: &S::State,
+                _my_vertex_idx: usize,
+                my_vertex_state: &S::State,
+                parent: &Self,
+            ) -> (f32, Self) {
+                let me = Self {
+                    dist: parent.dist + prev_vertex_state.dist(&my_vertex_state),
+                };
+                (me.dist as f32, me)
+            }
+        }
     }
 
     struct CostPriority {
@@ -56,7 +111,7 @@ pub mod tree {
     }
 
     #[derive(Debug)]
-    pub struct TreeSearch<'a, S: StateSpace, F: Propagate<S>> {
+    pub struct TreeSearch<'a, S: StateSpace, F: Propagation<S>> {
         graph: &'a Graph<S>,
         start_idx: usize,
         stop_idx: usize,
@@ -64,7 +119,7 @@ pub mod tree {
         tree: HashMap<usize, F>,
     }
 
-    impl<'a, S: StateSpace, F: Propagate<S>> TreeSearch<'a, S, F> {
+    impl<'a, S: StateSpace, F: Propagation<S>> TreeSearch<'a, S, F> {
         pub fn try_search(graph: &'a Graph<S>, start_idx: usize, stop_idx: usize) -> Self {
             Self::try_search_with_alloc(graph, start_idx, stop_idx, 1.0)
         }
@@ -160,7 +215,7 @@ pub mod tree {
         }
     }
 
-    impl<'a, S: StateSpace, F: Propagate<S>> From<TreeSearch<'a, S, F>> for Mesh {
+    impl<'a, S: StateSpace, F: Propagation<S>> From<TreeSearch<'a, S, F>> for Mesh {
         fn from(search: TreeSearch<'a, S, F>) -> Mesh {
             let mut mesh = Mesh::new(PrimitiveTopology::LineList);
             let tree: Vec<(usize, usize)> = search

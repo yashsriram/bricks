@@ -12,10 +12,10 @@ impl<S: StateSpace> PRM<S> {
         let states: Vec<S::State> = state_space.sample_batch(num_samples);
         let mut adjacencies = vec![BTreeSet::new(); states.len()];
         for i in 0..(states.len() - 1) {
-            let v1 = &states[i];
+            let s1 = &states[i];
             for j in (i + 1)..states.len() {
-                let v2 = &states[j];
-                if v1.dist(v2) <= edge_len {
+                let s2 = &states[j];
+                if s1.dist(s2) <= edge_len {
                     adjacencies[i].insert(j);
                     adjacencies[j].insert(i);
                 }
@@ -31,5 +31,28 @@ impl<S: StateSpace> PRM<S> {
                     .collect(),
             },
         }
+    }
+
+    pub fn add(&mut self, states: Vec<S::State>, edge_len: f32) -> Vec<usize> {
+        let prev_graph_size = self.graph.vertices.len();
+        for state in states.into_iter() {
+            self.graph.vertices.push(Vertex {
+                state: state,
+                adjacencies: BTreeSet::new(),
+            });
+        }
+        for i in (prev_graph_size..self.graph.vertices.len()).rev() {
+            for j in 0..(i - 1) {
+                if self.graph.vertices[i]
+                    .state
+                    .dist(&self.graph.vertices[j].state)
+                    <= edge_len
+                {
+                    self.graph.vertices[i].adjacencies.insert(j);
+                    self.graph.vertices[j].adjacencies.insert(i);
+                }
+            }
+        }
+        (prev_graph_size..self.graph.vertices.len()).collect()
     }
 }

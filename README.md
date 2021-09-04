@@ -31,8 +31,8 @@
     - [x] start, stop, goal, max idxs
     - [x] handle stop not reached -> reachable subgraph explored
     - [x] TreeSearch = Open least cost on fringe + Propagate to unexplored adjacencies and add them to fringe
-    - [x] VertexSearchState = CostPriority + Propagate traits
-    - [x] IndexedVertexSearchState = Ord on cost() trait fn + open min cost first + NaN cost is INF + NAN cost = NAN cost
+    - [x] Propagate trait = search state + cost priority
+    - [x] CostPriority = Ord on cost + open min cost first + NaN cost is INF + NAN cost = NAN cost
     - [x] Searching for a stop = may finds path to stop + may some other vertices => so same search can be used to find paths to multiple vertices
     - [x] Multiple searches on a graph = State per search
     - [x] Parallelizable searches
@@ -98,6 +98,7 @@ graphics-viz, rust libs create/contribute.
     - RRT
     - RRT^\*
     - function approximator based policy (optimization, ML, DL, RL, ...)
+    - Reflecting ripple search
 - Motion planning, conf space obstacles
 - Discriminators
     1. Global opt vs Local opt
