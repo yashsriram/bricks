@@ -1,12 +1,12 @@
 pub mod ripple {
     use super::super::Graph;
-    use crate::plan::StateSpace;
-
+    use crate::plan::{State, StateSpace};
+    use bevy::render::mesh::{Indices, Mesh};
+    use bevy::render::pipeline::PrimitiveTopology;
     use std::cmp::Ordering;
     use std::collections::BinaryHeap;
     use std::collections::HashMap;
     use std::fmt::Debug;
-    use std::marker::PhantomData;
 
     pub trait Propagate<S: StateSpace>: Debug + Sized {
         fn as_start(start_vertex_idx: usize, start_state: &S::State) -> (f32, Self);
@@ -56,22 +56,21 @@ pub mod ripple {
     }
 
     #[derive(Debug)]
-    pub struct RippleSearch<S: StateSpace, F: Propagate<S>> {
-        state_space: PhantomData<S>,
+    pub struct RippleSearch<'a, S: StateSpace, F: Propagate<S>> {
+        graph: &'a Graph<S>,
         start_idx: usize,
         stop_idx: usize,
-        max_idx: usize,
         vertex_parent_map: HashMap<usize, Option<usize>>,
         ripple: HashMap<usize, F>,
     }
 
-    impl<S: StateSpace, F: Propagate<S>> RippleSearch<S, F> {
-        pub fn try_search(graph: &Graph<S>, start_idx: usize, stop_idx: usize) -> Self {
+    impl<'a, S: StateSpace, F: Propagate<S>> RippleSearch<'a, S, F> {
+        pub fn try_search(graph: &'a Graph<S>, start_idx: usize, stop_idx: usize) -> Self {
             Self::try_search_with_alloc(graph, start_idx, stop_idx, 1.0)
         }
 
         pub fn try_search_with_alloc(
-            graph: &Graph<S>,
+            graph: &'a Graph<S>,
             start_idx: usize,
             stop_idx: usize,
             initial_alloc_frac: f32,
@@ -118,10 +117,9 @@ pub mod ripple {
                 }
             }
             RippleSearch {
-                state_space: PhantomData,
+                graph: graph,
                 start_idx: start_idx,
                 stop_idx: stop_idx,
-                max_idx: graph.vertices.len() - 1,
                 vertex_parent_map: vertex_parent_map,
                 ripple: ripple,
             }
@@ -136,7 +134,7 @@ pub mod ripple {
         }
 
         pub fn max_idx(&self) -> usize {
-            self.max_idx
+            self.graph.vertices.len() - 1
         }
 
         pub fn path_to_stop(&self) -> Option<Vec<usize>> {
@@ -144,7 +142,7 @@ pub mod ripple {
         }
 
         pub fn path_to(&self, goal_idx: usize) -> Option<Vec<usize>> {
-            assert!(goal_idx <= self.max_idx);
+            assert!(goal_idx <= self.max_idx());
             if goal_idx == self.start_idx {
                 return Some(vec![self.start_idx]);
             }
@@ -159,6 +157,34 @@ pub mod ripple {
                 1 => None,
                 _ => Some(path),
             }
+        }
+    }
+
+    impl<'a, S: StateSpace, F: Propagate<S>> From<RippleSearch<'a, S, F>> for Mesh {
+        fn from(search: RippleSearch<'a, S, F>) -> Mesh {
+            let mut mesh = Mesh::new(PrimitiveTopology::LineList);
+            let tree: Vec<(usize, usize)> = search
+                .vertex_parent_map
+                .iter()
+                .map(|(&child_idx, &parent_idx)| (child_idx, parent_idx.unwrap_or(child_idx)))
+                .collect();
+            let ends: Vec<[f32; 3]> = tree
+                .iter()
+                .map(|(child_idx, parent_idx)| {
+                    vec![
+                        search.graph.vertices[*child_idx].state.project_to_3d(),
+                        search.graph.vertices[*parent_idx].state.project_to_3d(),
+                    ]
+                })
+                .flatten()
+                .collect();
+            let lines: Vec<u32> = ends.iter().enumerate().map(|(i, _)| i as u32).collect();
+            let indices = Indices::U32(lines);
+            mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, ends);
+            mesh.set_indices(Some(indices));
+            let vertex_colors = vec![[1.0, 0.0, 0.0, 1.0]; tree.len() * 2];
+            mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
+            mesh
         }
     }
 }

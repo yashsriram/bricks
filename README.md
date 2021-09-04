@@ -12,12 +12,11 @@
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).
 
 ### roadmap
-- [ ] Demos until now
 - [ ] consume <- motion-planning repo
     - [ ] source code
     - [ ] demos
+- [ ] Demos and tests until now
 - [x] wireframe viz: lines, color, 3D Perspective FPS camera, minimal, speed (stress test)
-    - [ ] Make several vis limits demos
 - `State`, `StateSpace`
     - [x] Traits
     - [x] RectangularSpace
@@ -39,9 +38,9 @@
     - [x] Parallelizable searches
     - [x] Large graph - small area search is inexpensive - uses sparse seach state using hashmaps
     - [x] Control initial alloc size of ripple and fringe
-    - [x] Extract parents into RippleSearch
     - [x] Get path to a goal, get path to stop, store start, stop, max idxs
     - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority
+    - [x] Vis
     - [ ] BFS, UCS, A\* search states
 - PRM
     - [x] Create a `Graph<StateSpace>`

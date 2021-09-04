@@ -43,7 +43,6 @@ impl Propagate<RectangleSpace> for JumpsFromStart {
     }
 }
 
-struct Marked;
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let prm = PRM::with_num_samples(
         RectangleSpace {
@@ -68,13 +67,18 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         )]),
         ..Default::default()
     });
-    commands
-        .spawn_bundle(MeshBundle {
-            mesh: meshes.add(prm.graph.into()),
-            render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-            )]),
-            ..Default::default()
-        })
-        .insert(Marked);
+    commands.spawn_bundle(MeshBundle {
+        mesh: meshes.add(search.into()),
+        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
+            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
+        )]),
+        ..Default::default()
+    });
+    commands.spawn_bundle(MeshBundle {
+        mesh: meshes.add(prm.graph.into()),
+        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
+            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
+        )]),
+        ..Default::default()
+    });
 }

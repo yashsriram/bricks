@@ -6,7 +6,7 @@ pub mod graph;
 pub trait State: Debug {
     fn dist(&self, other: &Self) -> f32;
 
-    fn projection_to_3d(&self) -> [f32; 3];
+    fn project_to_3d(&self) -> [f32; 3];
 }
 
 pub trait StateSpace: Debug + Into<Mesh> {
@@ -27,7 +27,7 @@ pub mod planar {
             (*self - *other).length()
         }
 
-        fn projection_to_3d(&self) -> [f32; 3] {
+        fn project_to_3d(&self) -> [f32; 3] {
             [self.x, self.y, 0.0]
         }
     }

@@ -6,11 +6,13 @@ use std::collections::BTreeSet;
 pub mod prm;
 pub mod search;
 
+#[derive(Debug)]
 pub struct Vertex<S: StateSpace> {
     state: S::State,
     adjacencies: BTreeSet<usize>,
 }
 
+#[derive(Debug)]
 pub struct Graph<S: StateSpace> {
     vertices: Vec<Vertex<S>>,
 }
@@ -19,12 +21,12 @@ impl<S: StateSpace> Graph<S> {}
 
 impl<S: StateSpace> From<Graph<S>> for Mesh {
     fn from(graph: Graph<S>) -> Mesh {
+        let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let vertex_positions: Vec<[f32; 3]> = graph
             .vertices
             .iter()
-            .map(|Vertex { state, .. }| state.projection_to_3d())
+            .map(|Vertex { state, .. }| state.project_to_3d())
             .collect();
-        let vertex_colors = vec![[1.0, 1.0, 1.0, 0.5]; graph.vertices.len()];
         let lines: Vec<u32> = graph
             .vertices
             .iter()
@@ -47,11 +49,10 @@ impl<S: StateSpace> From<Graph<S>> for Mesh {
             .flatten()
             .collect();
         let indices = Indices::U32(lines);
-
-        let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertex_positions);
-        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
         mesh.set_indices(Some(indices));
+        let vertex_colors = vec![[1.0, 1.0, 1.0, 0.1]; graph.vertices.len()];
+        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
         mesh
     }
 }
