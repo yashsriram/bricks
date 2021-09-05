@@ -6,6 +6,7 @@ pub mod tree {
     use std::cmp::Ordering;
     use std::collections::BinaryHeap;
     use std::collections::HashMap;
+    use std::collections::HashSet;
     use std::fmt::Debug;
 
     pub trait Propagation<S: StateSpace>: Debug + Sized {
@@ -116,6 +117,7 @@ pub mod tree {
         start_idx: usize,
         stop_idx: usize,
         parent_map: HashMap<usize, Option<usize>>,
+        fringe: HashSet<usize>,
         tree: HashMap<usize, F>,
     }
 
@@ -176,6 +178,11 @@ pub mod tree {
                 start_idx: start_idx,
                 stop_idx: stop_idx,
                 parent_map: parent_map,
+                fringe: fringe
+                    .into_sorted_vec()
+                    .into_iter()
+                    .map(|CostPriority { vertex_idx, .. }| vertex_idx)
+                    .collect(),
                 tree: tree,
             }
         }
@@ -218,26 +225,38 @@ pub mod tree {
     impl<'a, S: StateSpace, F: Propagation<S>> From<TreeSearch<'a, S, F>> for Mesh {
         fn from(search: TreeSearch<'a, S, F>) -> Mesh {
             let mut mesh = Mesh::new(PrimitiveTopology::LineList);
-            let tree: Vec<(usize, usize)> = search
+            let flattened_tree: Vec<usize> = search
                 .parent_map
                 .iter()
-                .map(|(&child_idx, &parent_idx)| (child_idx, parent_idx.unwrap_or(child_idx)))
-                .collect();
-            let ends: Vec<[f32; 3]> = tree
-                .iter()
-                .map(|(child_idx, parent_idx)| {
-                    vec![
-                        search.graph.vertices[*child_idx].state.project_to_3d(),
-                        search.graph.vertices[*parent_idx].state.project_to_3d(),
-                    ]
-                })
+                .map(|(&child_idx, &parent_idx)| vec![child_idx, parent_idx.unwrap_or(child_idx)])
                 .flatten()
                 .collect();
-            let lines: Vec<u32> = ends.iter().enumerate().map(|(i, _)| i as u32).collect();
-            let indices = Indices::U32(lines);
-            mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, ends);
+            let positions: Vec<[f32; 3]> = flattened_tree
+                .iter()
+                .map(|idx| search.graph.vertices[*idx].state.project_to_3d())
+                .collect();
+            let indices: Vec<u32> = positions
+                .iter()
+                .enumerate()
+                .map(|(i, _)| i as u32)
+                .collect();
+            let indices = Indices::U32(indices);
+            mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
             mesh.set_indices(Some(indices));
-            let vertex_colors = vec![[1.0, 0.0, 0.0, 1.0]; tree.len() * 2];
+            let vertex_colors: Vec<[f32; 4]> = flattened_tree
+                .iter()
+                .map(|idx| {
+                    if *idx == search.start_idx {
+                        [1.0, 1.0, 0.0, 1.0]
+                    } else if *idx == search.stop_idx {
+                        [0.0, 1.0, 0.0, 1.0]
+                    } else if search.fringe.contains(idx) {
+                        [0.0, 1.0, 1.0, 1.0]
+                    } else {
+                        [1.0, 0.0, 1.0, 0.2]
+                    }
+                })
+                .collect();
             mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
             mesh
         }

@@ -19,7 +19,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         size: Vec2::new(5.0, 3.0),
     };
     let mut prm = PRM::with_num_samples(rectangular_space, 1000, 0.2);
-    let idxes = prm.add(vec![Vec2::new(0.0, 0.0), Vec2::new(2.5, 3.0)], 0.5);
+    let idxes = prm.add(vec![Vec2::new(0.3, 0.7), Vec2::new(2.5, 3.0)], 0.5);
     let search =
         TreeSearch::<RectangleSpace, JumpsFromStart>::try_search(&prm.graph, idxes[0], idxes[1]);
     println!("{:?}", search.path_to_stop());

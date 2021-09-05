@@ -1,6 +1,6 @@
 use super::{Graph, Vertex};
 use crate::plan::{State, StateSpace};
-use std::collections::BTreeSet;
+use std::collections::HashSet;
 
 pub struct PRM<S: StateSpace> {
     pub state_space: S,
@@ -10,7 +10,7 @@ pub struct PRM<S: StateSpace> {
 impl<S: StateSpace> PRM<S> {
     pub fn with_num_samples(state_space: S, num_samples: usize, edge_len: f32) -> Self {
         let states: Vec<S::State> = state_space.sample_batch(num_samples);
-        let mut adjacencies = vec![BTreeSet::new(); states.len()];
+        let mut adjacencies = vec![HashSet::new(); states.len()];
         for i in 0..(states.len() - 1) {
             let s1 = &states[i];
             for j in (i + 1)..states.len() {
@@ -38,7 +38,7 @@ impl<S: StateSpace> PRM<S> {
         for state in states.into_iter() {
             self.graph.vertices.push(Vertex {
                 state: state,
-                adjacencies: BTreeSet::new(),
+                adjacencies: HashSet::new(),
             });
         }
         for i in (prev_graph_size..self.graph.vertices.len()).rev() {

@@ -1,7 +1,7 @@
 use super::{State, StateSpace};
 use bevy::render::mesh::{Indices, Mesh};
 use bevy::render::pipeline::PrimitiveTopology;
-use std::collections::BTreeSet;
+use std::collections::HashSet;
 
 pub mod prm;
 pub mod search;
@@ -9,7 +9,7 @@ pub mod search;
 #[derive(Debug)]
 pub struct Vertex<S: StateSpace> {
     state: S::State,
-    adjacencies: BTreeSet<usize>,
+    adjacencies: HashSet<usize>,
 }
 
 #[derive(Debug)]
@@ -22,12 +22,12 @@ impl<S: StateSpace> Graph<S> {}
 impl<S: StateSpace> From<Graph<S>> for Mesh {
     fn from(graph: Graph<S>) -> Mesh {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
-        let vertex_positions: Vec<[f32; 3]> = graph
+        let positions: Vec<[f32; 3]> = graph
             .vertices
             .iter()
             .map(|Vertex { state, .. }| state.project_to_3d())
             .collect();
-        let lines: Vec<u32> = graph
+        let indices: Vec<u32> = graph
             .vertices
             .iter()
             .enumerate()
@@ -48,11 +48,11 @@ impl<S: StateSpace> From<Graph<S>> for Mesh {
             .into_iter()
             .flatten()
             .collect();
-        let indices = Indices::U32(lines);
-        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertex_positions);
+        let indices = Indices::U32(indices);
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         mesh.set_indices(Some(indices));
-        let vertex_colors = vec![[1.0, 1.0, 1.0, 0.1]; graph.vertices.len()];
-        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
+        let colors = vec![[1.0, 1.0, 1.0, 0.1]; graph.vertices.len()];
+        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
         mesh
     }
 }
