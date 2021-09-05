@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bricks::plan::graph::prm::PRM;
 use bricks::plan::graph::search::tree::propagations::*;
 use bricks::plan::graph::search::tree::TreeSearch;
-use bricks::plan::planar::RectangleSpace;
+use bricks::plan::spaces::RectangleSpace;
 use bricks::*;
 
 fn main() {
@@ -68,10 +68,8 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(
-            TreeSearch::<RectangleSpace, WeightedAStarLike>::try_search(
-                &prm.graph, idxes[0], idxes[1],
-            )
-            .into(),
+            TreeSearch::<RectangleSpace, W2AStarLike>::try_search(&prm.graph, idxes[0], idxes[1])
+                .into(),
         ),
         render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
             vis::WIREFRAME_PIPELINE_HANDLE.typed(),

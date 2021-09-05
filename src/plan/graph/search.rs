@@ -160,11 +160,11 @@ pub mod tree {
         }
 
         #[derive(Debug)]
-        pub struct WeightedAStarLike {
+        pub struct W2AStarLike {
             dist_from_start: f32,
         }
 
-        impl<S: StateSpace> Propagation<S> for WeightedAStarLike {
+        impl<S: StateSpace> Propagation<S> for W2AStarLike {
             fn as_start(
                 _: usize,
                 my_vertex_state: &S::State,
@@ -194,7 +194,7 @@ pub mod tree {
                         + prev_vertex_state.dist(&my_vertex_state),
                 };
                 (
-                    me.dist_from_start + my_vertex_state.dist(&stop_vertex_state) * 1.5,
+                    me.dist_from_start + my_vertex_state.dist(&stop_vertex_state) * 2.0,
                     me,
                 )
             }
