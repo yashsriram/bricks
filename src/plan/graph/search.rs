@@ -10,13 +10,20 @@ pub mod tree {
     use std::fmt::Debug;
 
     pub trait Propagation<S: StateSpace>: Debug + Sized {
-        fn as_start(my_vertex_idx: usize, my_vertex_state: &S::State) -> (f32, Self);
+        fn as_start(
+            my_vertex_idx: usize,
+            my_vertex_state: &S::State,
+            stop_vertex_idx: usize,
+            stop_vertex_state: &S::State,
+        ) -> (f32, Self);
 
         fn as_adj(
             prev_vertex_idx: usize,
             prev_vertex_state: &S::State,
             my_vertex_idx: usize,
             my_vertex_state: &S::State,
+            stop_vertex_idx: usize,
+            stop_vertex_state: &S::State,
             parent: &Self,
         ) -> (f32, Self);
     }
@@ -26,14 +33,14 @@ pub mod tree {
         use crate::plan::{State, StateSpace};
 
         #[derive(Debug)]
-        pub struct JumpsFromStart {
-            jumps: usize,
+        pub struct DFSLike {
+            order: isize,
         }
 
-        impl<S: StateSpace> Propagation<S> for JumpsFromStart {
-            fn as_start(_: usize, _: &S::State) -> (f32, Self) {
-                let me = Self { jumps: 0 };
-                (me.jumps as f32, me)
+        impl<S: StateSpace> Propagation<S> for DFSLike {
+            fn as_start(_: usize, _: &S::State, _: usize, _: &S::State) -> (f32, Self) {
+                let me = Self { order: -0 };
+                (me.order as f32, me)
             }
 
             fn as_adj(
@@ -41,37 +48,155 @@ pub mod tree {
                 _: &S::State,
                 _: usize,
                 _: &S::State,
+                _: usize,
+                _: &S::State,
                 parent: &Self,
             ) -> (f32, Self) {
                 let me = Self {
-                    jumps: parent.jumps + 1,
+                    order: parent.order - 1,
                 };
-                (me.jumps as f32, me)
+                (me.order as f32, me)
             }
         }
 
         #[derive(Debug)]
-        pub struct DistFromStart {
-            dist: f32,
+        pub struct BFSLike {
+            jumps_from_start: usize,
         }
 
-        impl<S: StateSpace> Propagation<S> for DistFromStart {
-            fn as_start(_start_vertex_idx: usize, _start_vertex_state: &S::State) -> (f32, Self) {
-                let me = Self { dist: 0.0 };
-                (me.dist as f32, me)
+        impl<S: StateSpace> Propagation<S> for BFSLike {
+            fn as_start(_: usize, _: &S::State, _: usize, _: &S::State) -> (f32, Self) {
+                let me = Self {
+                    jumps_from_start: 0,
+                };
+                (me.jumps_from_start as f32, me)
             }
 
             fn as_adj(
-                _prev_vertex_idx: usize,
-                prev_vertex_state: &S::State,
-                _my_vertex_idx: usize,
-                my_vertex_state: &S::State,
+                _: usize,
+                _: &S::State,
+                _: usize,
+                _: &S::State,
+                _: usize,
+                _: &S::State,
                 parent: &Self,
             ) -> (f32, Self) {
                 let me = Self {
-                    dist: parent.dist + prev_vertex_state.dist(&my_vertex_state),
+                    jumps_from_start: parent.jumps_from_start + 1,
                 };
-                (me.dist as f32, me)
+                (me.jumps_from_start as f32, me)
+            }
+        }
+
+        #[derive(Debug)]
+        pub struct UCSLike {
+            dist_from_start: f32,
+        }
+
+        impl<S: StateSpace> Propagation<S> for UCSLike {
+            fn as_start(_: usize, _: &S::State, _: usize, _: &S::State) -> (f32, Self) {
+                let me = Self {
+                    dist_from_start: 0.0,
+                };
+                (me.dist_from_start as f32, me)
+            }
+
+            fn as_adj(
+                _: usize,
+                prev_vertex_state: &S::State,
+                _: usize,
+                my_vertex_state: &S::State,
+                _: usize,
+                _: &S::State,
+                parent: &Self,
+            ) -> (f32, Self) {
+                let me = Self {
+                    dist_from_start: parent.dist_from_start
+                        + prev_vertex_state.dist(&my_vertex_state),
+                };
+                (me.dist_from_start as f32, me)
+            }
+        }
+
+        #[derive(Debug)]
+        pub struct AStarLike {
+            dist_from_start: f32,
+        }
+
+        impl<S: StateSpace> Propagation<S> for AStarLike {
+            fn as_start(
+                _: usize,
+                my_vertex_state: &S::State,
+                _: usize,
+                stop_vertex_state: &S::State,
+            ) -> (f32, Self) {
+                let me = Self {
+                    dist_from_start: 0.0,
+                };
+                (
+                    me.dist_from_start + my_vertex_state.dist(&stop_vertex_state),
+                    me,
+                )
+            }
+
+            fn as_adj(
+                _: usize,
+                prev_vertex_state: &S::State,
+                _: usize,
+                my_vertex_state: &S::State,
+                _: usize,
+                stop_vertex_state: &S::State,
+                parent: &Self,
+            ) -> (f32, Self) {
+                let me = Self {
+                    dist_from_start: parent.dist_from_start
+                        + prev_vertex_state.dist(&my_vertex_state),
+                };
+                (
+                    me.dist_from_start + my_vertex_state.dist(&stop_vertex_state),
+                    me,
+                )
+            }
+        }
+
+        #[derive(Debug)]
+        pub struct WeightedAStarLike {
+            dist_from_start: f32,
+        }
+
+        impl<S: StateSpace> Propagation<S> for WeightedAStarLike {
+            fn as_start(
+                _: usize,
+                my_vertex_state: &S::State,
+                _: usize,
+                stop_vertex_state: &S::State,
+            ) -> (f32, Self) {
+                let me = Self {
+                    dist_from_start: 0.0,
+                };
+                (
+                    me.dist_from_start + my_vertex_state.dist(&stop_vertex_state),
+                    me,
+                )
+            }
+
+            fn as_adj(
+                _: usize,
+                prev_vertex_state: &S::State,
+                _: usize,
+                my_vertex_state: &S::State,
+                _: usize,
+                stop_vertex_state: &S::State,
+                parent: &Self,
+            ) -> (f32, Self) {
+                let me = Self {
+                    dist_from_start: parent.dist_from_start
+                        + prev_vertex_state.dist(&my_vertex_state),
+                };
+                (
+                    me.dist_from_start + my_vertex_state.dist(&stop_vertex_state) * 1.5,
+                    me,
+                )
             }
         }
     }
@@ -135,8 +260,12 @@ pub mod tree {
             assert!(start_idx < graph.vertices.len());
             assert!(stop_idx < graph.vertices.len());
             assert!(initial_alloc_frac >= 0.0);
-            let (start_cost, start_search_state) =
-                F::as_start(start_idx, &graph.vertices[start_idx].state);
+            let (start_cost, start_search_state) = F::as_start(
+                start_idx,
+                &graph.vertices[start_idx].state,
+                stop_idx,
+                &graph.vertices[stop_idx].state,
+            );
             let collec_alloc_size = (graph.vertices.len() as f32 * initial_alloc_frac) as usize;
             let mut parent_map = HashMap::with_capacity(collec_alloc_size);
             parent_map.insert(start_idx, None);
@@ -162,6 +291,8 @@ pub mod tree {
                             &graph.vertices[curr_idx].state,
                             adj_idx,
                             &graph.vertices[adj_idx].state,
+                            stop_idx,
+                            &graph.vertices[stop_idx].state,
                             &tree[&curr_idx],
                         );
                         parent_map.insert(adj_idx, Some(curr_idx));

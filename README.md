@@ -12,11 +12,15 @@
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).
 
 ### roadmap
-- [ ] consume <- motion-planning repo
-    - [ ] source code
-    - [ ] demos
-- [ ] Demos and tests until now
-- [x] wireframe viz: lines, color, 3D Perspective FPS camera, minimal, speed (stress test)
+- Demos and tests until now
+    - [x] DFS, BFS, UCS, A\*, weighted A\* on 2D euclidean space
+    - [ ] consume <- motion-planning repo
+        - [ ] source code
+        - [ ] demos
+- `Vis`
+    - [x] wireframe rendering of a mesh, with color, minimal, speed (stress test)
+    - [x] 3D Perspective FPS camera
+    - [ ] Render multiple meshes for a single entity
 - `State`, `StateSpace`
     - [x] Traits
     - [x] RectangularSpace
@@ -41,7 +45,7 @@
     - [x] Get path to a goal, get path to stop, store start, stop, max idxs
     - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority
     - [x] Vis
-    - [ ] BFS, UCS, A\* search states
+    - [x] BFS, UCS, A\* search states
 - PRM
     - [x] Create a `Graph<StateSpace>`
     - [x] Sampling from `StateSpace`
