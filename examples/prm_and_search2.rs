@@ -15,10 +15,10 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let rectangular_space = CuboidSpace {
+    let space = CuboidSpace {
         size: Vec3::new(12.0, 10.0, 5.0),
     };
-    let mut prm = PRM::with_num_samples(rectangular_space, 2000, 1.0);
+    let mut prm = PRM::with_num_samples(space, 2000, 1.0);
     let idxes = prm.add(
         vec![Vec3::new(0.3, 0.7, 0.5), Vec3::new(9.5, 7.3, 4.0)],
         1.0,

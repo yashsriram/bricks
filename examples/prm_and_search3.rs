@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bricks::plan::graph::prm::PRM;
 use bricks::plan::graph::search::tree::propagations::*;
 use bricks::plan::graph::search::tree::TreeSearch;
-use bricks::plan::spaces::RectangleSpace;
+use bricks::plan::spaces::CircleSpace;
 use bricks::*;
 
 fn main() {
@@ -15,17 +15,14 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let space = RectangleSpace {
-        size: Vec2::new(12.0, 10.0),
-    };
-    let mut prm = PRM::with_num_samples(space, 1500, 0.5);
-    let idxes = prm.add(vec![Vec2::new(0.3, 0.7), Vec2::new(9.5, 7.3)], 0.7);
+    let space = CircleSpace { radius: 5.0 };
+    let mut prm = PRM::with_num_samples(space, 2000, 0.5);
+    let idxes = prm.add(vec![Vec2::new(-2.3, -2.7), Vec2::new(2.5, 2.3)], 1.0);
 
     use bevy::render::pipeline::RenderPipeline;
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(
-            TreeSearch::<RectangleSpace, DFSLike>::try_search(&prm.graph, idxes[0], idxes[1])
-                .into(),
+            TreeSearch::<CircleSpace, DFSLike>::try_search(&prm.graph, idxes[0], idxes[1]).into(),
         ),
         render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
             vis::WIREFRAME_PIPELINE_HANDLE.typed(),
@@ -35,8 +32,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(
-            TreeSearch::<RectangleSpace, BFSLike>::try_search(&prm.graph, idxes[0], idxes[1])
-                .into(),
+            TreeSearch::<CircleSpace, BFSLike>::try_search(&prm.graph, idxes[0], idxes[1]).into(),
         ),
         render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
             vis::WIREFRAME_PIPELINE_HANDLE.typed(),
@@ -46,8 +42,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(
-            TreeSearch::<RectangleSpace, UCSLike>::try_search(&prm.graph, idxes[0], idxes[1])
-                .into(),
+            TreeSearch::<CircleSpace, UCSLike>::try_search(&prm.graph, idxes[0], idxes[1]).into(),
         ),
         render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
             vis::WIREFRAME_PIPELINE_HANDLE.typed(),
@@ -57,8 +52,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(
-            TreeSearch::<RectangleSpace, AStarLike>::try_search(&prm.graph, idxes[0], idxes[1])
-                .into(),
+            TreeSearch::<CircleSpace, AStarLike>::try_search(&prm.graph, idxes[0], idxes[1]).into(),
         ),
         render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
             vis::WIREFRAME_PIPELINE_HANDLE.typed(),
@@ -68,7 +62,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(
-            TreeSearch::<RectangleSpace, W2AStarLike>::try_search(&prm.graph, idxes[0], idxes[1])
+            TreeSearch::<CircleSpace, W2AStarLike>::try_search(&prm.graph, idxes[0], idxes[1])
                 .into(),
         ),
         render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(

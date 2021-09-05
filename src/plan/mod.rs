@@ -53,19 +53,60 @@ pub mod spaces {
 
     impl From<RectangleSpace> for Mesh {
         fn from(s: RectangleSpace) -> Mesh {
-            let vertex_positions = vec![
+            let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
+            let positions = vec![
                 [0.0, 0.0, 0.0],
                 [s.size.x, 0.0, 0.0],
                 [s.size.x, s.size.y, 0.0],
                 [0.0, s.size.y, 0.0],
             ];
-            let vertex_colors = vec![[0.0, 1.0, 1.0]; 4];
+            mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
             let indices = Indices::U32(vec![0, 1, 2, 3, 0]);
-
-            let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
-            mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertex_positions);
-            mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
             mesh.set_indices(Some(indices));
+            let colors = vec![[0.0, 1.0, 1.0, 0.1]; 4];
+            mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
+            mesh
+        }
+    }
+
+    #[derive(Debug)]
+    pub struct CircleSpace {
+        pub radius: f32,
+    }
+
+    impl StateSpace for CircleSpace {
+        type State = Vec2;
+
+        fn sample_batch(&self, num_samples: usize) -> Vec<Self::State> {
+            let mut rng = thread_rng();
+            let samples: Vec<Vec2> = (&mut rng)
+                .sample_iter(Standard)
+                .take(num_samples)
+                .map(|(r, theta): (f32, f32)| {
+                    let r = r.sqrt();
+                    Vec2::new(
+                        r * self.radius * (theta * 2.0 * std::f32::consts::PI).cos(),
+                        r * self.radius * (theta * 2.0 * std::f32::consts::PI).sin(),
+                    )
+                })
+                .collect();
+            samples
+        }
+    }
+
+    impl From<CircleSpace> for Mesh {
+        fn from(s: CircleSpace) -> Mesh {
+            let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
+            let num_partitions: usize = 18;
+            let positions: Vec<[f32; 3]> = (0..=num_partitions)
+                .map(|i| 2.0 * std::f32::consts::PI / num_partitions as f32 * i as f32)
+                .map(|theta| [s.radius * theta.cos(), s.radius * theta.sin(), 0.0])
+                .collect();
+            mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+            let indices = Indices::U32((0..=num_partitions).map(|i| i as u32).collect());
+            mesh.set_indices(Some(indices));
+            let colors = vec![[0.0, 1.0, 1.0, 0.1]; num_partitions + 1];
+            mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
             mesh
         }
     }
@@ -119,8 +160,53 @@ pub mod spaces {
                 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7,
             ]);
             mesh.set_indices(Some(indices));
-            let vertex_colors = vec![[0.0, 1.0, 1.0]; 8];
+            let vertex_colors = vec![[0.0, 1.0, 1.0, 0.1]; 8];
             mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
+            mesh
+        }
+    }
+
+    #[derive(Debug)]
+    pub struct SphereSpace {
+        pub radius: f32,
+    }
+
+    impl StateSpace for SphereSpace {
+        type State = Vec3;
+
+        fn sample_batch(&self, num_samples: usize) -> Vec<Self::State> {
+            let mut rng = thread_rng();
+            let samples: Vec<Vec3> = (&mut rng)
+                .sample_iter(Standard)
+                .take(num_samples)
+                .map(|(r, phi, theta): (f32, f32, f32)| {
+                    let r = r.sqrt();
+                    Vec3::new(
+                        r * self.radius
+                            * (theta * 2.0 * std::f32::consts::PI).cos()
+                            * (phi * 2.0 * std::f32::consts::PI).cos(),
+                        r * self.radius
+                            * (theta * 2.0 * std::f32::consts::PI).cos()
+                            * (phi * 2.0 * std::f32::consts::PI).sin(),
+                        r * self.radius * (theta * 2.0 * std::f32::consts::PI).sin(),
+                    )
+                })
+                .collect();
+            samples
+        }
+    }
+
+    impl From<SphereSpace> for Mesh {
+        fn from(s: SphereSpace) -> Mesh {
+            let mut mesh: Mesh = shape::Icosphere {
+                radius: s.radius,
+                subdivisions: 10,
+            }
+            .into();
+            mesh.set_attribute(
+                Mesh::ATTRIBUTE_COLOR,
+                vec![[0.0, 1.0, 1.0, 0.1]; mesh.count_vertices()],
+            );
             mesh
         }
     }

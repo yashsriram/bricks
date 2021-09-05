@@ -24,9 +24,9 @@
 - `State`, `StateSpace`
     - [x] Traits
     - [x] RectangularSpace
-    - [ ] CircularSpace
-    - [ ] CuboidSpace
-    - [ ] SphereSpace
+    - [x] CircularSpace (role of sqrt)
+    - [x] CuboidSpace
+    - [x] SphereSpace (sqrt?)
 - `Graph`
     - [x] On a `StateSpace`
     - [x] Vertex = `StateSpace::State` +  `Set<VertexIdx>`
@@ -38,12 +38,12 @@
     - [x] Propagate trait = search state + cost priority
     - [x] CostPriority = Ord on cost + open min cost first + NaN cost is INF + NAN cost = NAN cost
     - [x] Searching for a stop = may finds path to stop + may some other vertices => so same search can be used to find paths to multiple vertices
-    - [x] Multiple searches on a graph = State per search
+    - [x] Multiple searches on a graph = State per search = No resetting of state
     - [x] Parallelizable searches
     - [x] Large graph - small area search is inexpensive - uses sparse seach state using hashmaps
     - [x] Control initial alloc size of tree and fringe
     - [x] Get path to a goal, get path to stop, store start, stop, max idxs
-    - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority
+    - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority => Get reference of underlying graph
     - [x] Vis
     - [x] BFS, UCS, A\* search states
 - PRM
