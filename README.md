@@ -13,7 +13,7 @@
 
 ### roadmap
 - Demos and tests until now
-    - [x] DFS, BFS, UCS, A\*, weighted A\* on 2D euclidean space
+    - [ ] All demos
     - [ ] consume <- motion-planning repo
         - [ ] source code
         - [ ] demos
@@ -80,6 +80,9 @@
     - [ ] Boids
     - [ ] TTC
 
+#### rust libs, bins, examples, benchmarks create/contribute
+- Churning motion-planning, escape-room, stick-solo, drive, wall-e repos; i.e. extracting a lib crate and bin crates from these repos.
+
 #### viz tools
 graphics-viz, rust libs create/contribute.
 1. Visualizer as alternatives for rviz and other robot vis utility tools.
@@ -91,22 +94,10 @@ graphics-viz, rust libs create/contribute.
 1. Fourier bots
 1. Speedup stuff e.g. Parallelization.
 
-#### pp, rust libs create/contribute
-- Churning motion-planning, escape-room and stick-solo repos; i.e. extracting a lib crate and bin crates from these repos.
-- Path planning, Path planning with fancy abstractions (joint spaces) = motion planning, Path planning with times at vertices = trajectory planning?
-- Methods
-    - Direct straight line path from A to B
-    - Gradient descent
-    - Monte carlo sampling
-    - PRM/(DFS, BFS, UCS, A\*, weighted-A\*)
-    - RRT
-    - RRT^\*
-    - function approximator based policy (optimization, ML, DL, RL, ...)
-    - Reflecting ripple search
-- Motion planning, conf space obstacles
-- Discriminators
-    1. Global opt vs Local opt
-    1. Can detect conf space obstacles vs cannot detect conf space obstacles
+#### pp
+- Path planning
+- Path planning with fancy abstractions (joint spaces) = motion planning
+- Path planning with times at vertices = trajectory planning?
 - Tasks as Nd space search
     1. Locomotion tasks (circle, diffdrive, line, bicycle, etc...)
     1. Kinematic chain (serial manipulator) e.g. Inverse kinematics
@@ -115,6 +106,18 @@ graphics-viz, rust libs create/contribute.
     1. Submarine (non-holonomic 3d)
     1. Car (non-holonomic 3d + road)
     1. Airplane/Drone (fluid dynamics)
+- Methods
+    - Direct straight line path from A to B
+    - Gradient descent
+    - Monte carlo sampling
+    - RRT
+    - RRT^\*
+    - function approximator based policy (optimization, ML, DL, RL, ...)
+    - Reflecting ripple search
+- Motion planning, conf space obstacles
+- Discriminators
+    1. Global opt vs Local opt
+    1. Can detect conf space obstacles vs cannot detect conf space obstacles
 - Multi agent planning, crowds, Multi-robot coordination.
     1. ttc
     1. RVO

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bricks::plan::graph::prm::PRM;
-use bricks::plan::graph::search::tree::propagations::*;
-use bricks::plan::graph::search::tree::TreeSearch;
+use bricks::plan::graph::search::ripple::propagations::*;
+use bricks::plan::graph::search::ripple::TreeSearch;
 use bricks::plan::spaces::SphereSpace;
 use bricks::*;
 
