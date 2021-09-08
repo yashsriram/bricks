@@ -10,19 +10,11 @@ pub mod ripple {
     use std::fmt::Debug;
 
     pub trait Propagation<S: StateSpace>: Debug + Sized {
-        fn as_start(
-            my_vertex_idx: usize,
-            my_vertex_state: &S::State,
-            stop_vertex_idx: usize,
-            stop_vertex_state: &S::State,
-        ) -> (f32, Self);
+        fn as_start(my_vertex_state: &S::State, stop_vertex_state: &S::State) -> (f32, Self);
 
         fn as_adj(
-            prev_vertex_idx: usize,
             prev_vertex_state: &S::State,
-            my_vertex_idx: usize,
             my_vertex_state: &S::State,
-            stop_vertex_idx: usize,
             stop_vertex_state: &S::State,
             parent: &Self,
         ) -> (f32, Self);
@@ -38,20 +30,12 @@ pub mod ripple {
         }
 
         impl<S: StateSpace> Propagation<S> for DFSLike {
-            fn as_start(_: usize, _: &S::State, _: usize, _: &S::State) -> (f32, Self) {
+            fn as_start(_: &S::State, _: &S::State) -> (f32, Self) {
                 let me = Self { order: -0 };
                 (me.order as f32, me)
             }
 
-            fn as_adj(
-                _: usize,
-                _: &S::State,
-                _: usize,
-                _: &S::State,
-                _: usize,
-                _: &S::State,
-                parent: &Self,
-            ) -> (f32, Self) {
+            fn as_adj(_: &S::State, _: &S::State, _: &S::State, parent: &Self) -> (f32, Self) {
                 let me = Self {
                     order: parent.order - 1,
                 };
@@ -65,22 +49,14 @@ pub mod ripple {
         }
 
         impl<S: StateSpace> Propagation<S> for BFSLike {
-            fn as_start(_: usize, _: &S::State, _: usize, _: &S::State) -> (f32, Self) {
+            fn as_start(_: &S::State, _: &S::State) -> (f32, Self) {
                 let me = Self {
                     jumps_from_start: 0,
                 };
                 (me.jumps_from_start as f32, me)
             }
 
-            fn as_adj(
-                _: usize,
-                _: &S::State,
-                _: usize,
-                _: &S::State,
-                _: usize,
-                _: &S::State,
-                parent: &Self,
-            ) -> (f32, Self) {
+            fn as_adj(_: &S::State, _: &S::State, _: &S::State, parent: &Self) -> (f32, Self) {
                 let me = Self {
                     jumps_from_start: parent.jumps_from_start + 1,
                 };
@@ -94,7 +70,7 @@ pub mod ripple {
         }
 
         impl<S: StateSpace> Propagation<S> for UCSLike {
-            fn as_start(_: usize, _: &S::State, _: usize, _: &S::State) -> (f32, Self) {
+            fn as_start(_: &S::State, _: &S::State) -> (f32, Self) {
                 let me = Self {
                     dist_from_start: 0.0,
                 };
@@ -102,11 +78,8 @@ pub mod ripple {
             }
 
             fn as_adj(
-                _: usize,
                 prev_vertex_state: &S::State,
-                _: usize,
                 my_vertex_state: &S::State,
-                _: usize,
                 _: &S::State,
                 parent: &Self,
             ) -> (f32, Self) {
@@ -124,12 +97,7 @@ pub mod ripple {
         }
 
         impl<S: StateSpace> Propagation<S> for AStarLike {
-            fn as_start(
-                _: usize,
-                my_vertex_state: &S::State,
-                _: usize,
-                stop_vertex_state: &S::State,
-            ) -> (f32, Self) {
+            fn as_start(my_vertex_state: &S::State, stop_vertex_state: &S::State) -> (f32, Self) {
                 let me = Self {
                     dist_from_start: 0.0,
                 };
@@ -140,11 +108,8 @@ pub mod ripple {
             }
 
             fn as_adj(
-                _: usize,
                 prev_vertex_state: &S::State,
-                _: usize,
                 my_vertex_state: &S::State,
-                _: usize,
                 stop_vertex_state: &S::State,
                 parent: &Self,
             ) -> (f32, Self) {
@@ -165,12 +130,7 @@ pub mod ripple {
         }
 
         impl<S: StateSpace> Propagation<S> for W2AStarLike {
-            fn as_start(
-                _: usize,
-                my_vertex_state: &S::State,
-                _: usize,
-                stop_vertex_state: &S::State,
-            ) -> (f32, Self) {
+            fn as_start(my_vertex_state: &S::State, stop_vertex_state: &S::State) -> (f32, Self) {
                 let me = Self {
                     dist_from_start: 0.0,
                 };
@@ -181,11 +141,8 @@ pub mod ripple {
             }
 
             fn as_adj(
-                _: usize,
                 prev_vertex_state: &S::State,
-                _: usize,
                 my_vertex_state: &S::State,
-                _: usize,
                 stop_vertex_state: &S::State,
                 parent: &Self,
             ) -> (f32, Self) {
@@ -261,9 +218,7 @@ pub mod ripple {
             assert!(stop_idx < graph.vertices.len());
             assert!(initial_alloc_frac >= 0.0);
             let (start_cost, start_search_state) = F::as_start(
-                start_idx,
                 &graph.vertices[start_idx].state,
-                stop_idx,
                 &graph.vertices[stop_idx].state,
             );
             let collec_alloc_size = (graph.vertices.len() as f32 * initial_alloc_frac) as usize;
@@ -287,11 +242,8 @@ pub mod ripple {
                 for &adj_idx in graph.vertices[curr_idx].adjacencies.iter() {
                     if let None = tree.get(&adj_idx) {
                         let (adj_cost, adj_search_state) = F::as_adj(
-                            curr_idx,
                             &graph.vertices[curr_idx].state,
-                            adj_idx,
                             &graph.vertices[adj_idx].state,
-                            stop_idx,
                             &graph.vertices[stop_idx].state,
                             &tree[&curr_idx],
                         );
