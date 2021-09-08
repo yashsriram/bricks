@@ -12,9 +12,9 @@ pub const WIREFRAME_PIPELINE_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(PipelineDescriptor::TYPE_UUID, 0xa95223f8a53b6f66);
 
 #[derive(Debug, Default)]
-pub struct WireframePlugin;
+pub struct MinimalRenderPlugin;
 
-impl Plugin for WireframePlugin {
+impl Plugin for MinimalRenderPlugin {
     fn build(&self, app: &mut AppBuilder) {
         {
             let world = app.world_mut();

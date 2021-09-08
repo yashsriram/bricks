@@ -12,6 +12,10 @@
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).
 
 ### roadmap
+
+#### rust libs, bins, examples, benchmarks create/contribute
+- Churning motion-planning, escape-room, stick-solo, drive, wall-e repos; i.e. extracting a lib crate and bin crates from these repos.
+
 - Demos and tests until now
     - [ ] All demos
     - [ ] consume <- motion-planning repo
@@ -79,9 +83,6 @@
 - Crowds
     - [ ] Boids
     - [ ] TTC
-
-#### rust libs, bins, examples, benchmarks create/contribute
-- Churning motion-planning, escape-room, stick-solo, drive, wall-e repos; i.e. extracting a lib crate and bin crates from these repos.
 
 #### viz tools
 graphics-viz, rust libs create/contribute.

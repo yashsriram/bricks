@@ -45,29 +45,23 @@ fn rect(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    use bevy::render::pipeline::RenderPipeline;
+    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(0.0, y, 0.0),
         ..Default::default()
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.graph.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(0.0, y, 0.0),
         ..Default::default()
     });
     for (i, mesh) in search_meshes.into_iter().enumerate() {
         commands.spawn_bundle(MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-            )]),
+            render_pipelines: RenderPipelines::from_handles(handles.iter()),
             transform: Transform::from_xyz(14.0 * (i + 1) as f32, y, 0.0),
             ..Default::default()
         });
@@ -101,29 +95,23 @@ fn cuboid(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    use bevy::render::pipeline::RenderPipeline;
+    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(0.0, y, 0.0),
         ..Default::default()
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.graph.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(0.0, y, 0.0),
         ..Default::default()
     });
     for (i, mesh) in search_meshes.into_iter().enumerate() {
         commands.spawn_bundle(MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-            )]),
+            render_pipelines: RenderPipelines::from_handles(handles.iter()),
             transform: Transform::from_xyz(14.0 * (i + 1) as f32, y, 0.0),
             ..Default::default()
         });
@@ -152,29 +140,23 @@ fn circle(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    use bevy::render::pipeline::RenderPipeline;
+    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(5.0, y, 0.0),
         ..Default::default()
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.graph.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(5.0, y, 0.0),
         ..Default::default()
     });
     for (i, mesh) in search_meshes.into_iter().enumerate() {
         commands.spawn_bundle(MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-            )]),
+            render_pipelines: RenderPipelines::from_handles(handles.iter()),
             transform: Transform::from_xyz(5.0 + (14.0 * (i + 1) as f32), y, 0.0),
             ..Default::default()
         });
@@ -206,29 +188,23 @@ fn sphere(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    use bevy::render::pipeline::RenderPipeline;
+    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(5.0, y, 0.0),
         ..Default::default()
     });
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.graph.into()),
-        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-            vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-        )]),
+        render_pipelines: RenderPipelines::from_handles(handles.iter()),
         transform: Transform::from_xyz(5.0, y, 0.0),
         ..Default::default()
     });
     for (i, mesh) in search_meshes.into_iter().enumerate() {
         commands.spawn_bundle(MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                vis::WIREFRAME_PIPELINE_HANDLE.typed(),
-            )]),
+            render_pipelines: RenderPipelines::from_handles(handles.iter()),
             transform: Transform::from_xyz(5.0 + (14.0 * (i + 1) as f32), y, 0.0),
             ..Default::default()
         });

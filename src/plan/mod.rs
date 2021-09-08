@@ -63,7 +63,7 @@ pub mod spaces {
             mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
             let indices = Indices::U32(vec![0, 1, 2, 3, 0]);
             mesh.set_indices(Some(indices));
-            let colors = vec![[0.0, 1.0, 1.0, 0.1]; 4];
+            let colors = vec![[1.0, 1.0, 0.0, 0.1]; 4];
             mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
             mesh
         }
@@ -105,7 +105,7 @@ pub mod spaces {
             mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
             let indices = Indices::U32((0..=num_partitions).map(|i| i as u32).collect());
             mesh.set_indices(Some(indices));
-            let colors = vec![[0.0, 1.0, 1.0, 0.1]; num_partitions + 1];
+            let colors = vec![[1.0, 1.0, 0.0, 0.1]; num_partitions + 1];
             mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
             mesh
         }
@@ -160,7 +160,7 @@ pub mod spaces {
                 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7,
             ]);
             mesh.set_indices(Some(indices));
-            let vertex_colors = vec![[0.0, 1.0, 1.0, 0.1]; 8];
+            let vertex_colors = vec![[1.0, 1.0, 0.0, 0.1]; 8];
             mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
             mesh
         }
@@ -205,7 +205,7 @@ pub mod spaces {
             .into();
             mesh.set_attribute(
                 Mesh::ATTRIBUTE_COLOR,
-                vec![[0.0, 1.0, 1.0, 0.1]; mesh.count_vertices()],
+                vec![[1.0, 1.0, 0.0, 0.1]; mesh.count_vertices()],
             );
             mesh
         }

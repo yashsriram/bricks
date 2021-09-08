@@ -22,7 +22,7 @@ impl PluginGroup for BasePlugins {
         group.add(bevy::render::RenderPlugin::default());
         group.add(bevy::winit::WinitPlugin::default());
         group.add(bevy::wgpu::WgpuPlugin::default());
-        group.add(vis::WireframePlugin);
+        group.add(vis::MinimalRenderPlugin);
         group.add(CameraPlugin);
         group.add(FPSTitlePlugin);
     }
