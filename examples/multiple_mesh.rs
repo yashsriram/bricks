@@ -12,25 +12,25 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let mut mesh = Mesh::from(shape::Box::default());
+    let mut mesh = Mesh::from(shape::Capsule::default());
     mesh.set_attribute(
         Mesh::ATTRIBUTE_COLOR,
-        vec![[1.0, 0.0, 0.0, 1.0,]; mesh.count_vertices()],
+        vec![[0.0, 1.0, 0.0, 1.0,]; mesh.count_vertices()],
     );
     let mesh1 = meshes.add(mesh);
-    let mut mesh = Mesh::from(shape::Quad::default());
+    let mut mesh = Mesh::from(shape::Torus::default());
     mesh.set_attribute(
         Mesh::ATTRIBUTE_COLOR,
-        vec![[1.0, 0.0, 0.0, 1.0,]; mesh.count_vertices()],
+        vec![[0.0, 1.0, 0.0, 1.0,]; mesh.count_vertices()],
     );
     let mesh2 = meshes.add(mesh);
+    let mesh_vec = vec![mesh1, mesh2];
     let mut mesh = Mesh::from(shape::Icosphere::default());
     mesh.set_attribute(
         Mesh::ATTRIBUTE_COLOR,
         vec![[1.0, 0.0, 0.0, 0.1,]; mesh.count_vertices()],
     );
     let mesh3 = meshes.add(mesh);
-    let meshes = vec![mesh1, mesh2];
     commands
         .spawn()
         .insert_bundle(MeshBundle {
@@ -40,5 +40,5 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
             )]),
             ..Default::default()
         })
-        .insert(meshes);
+        .insert(mesh_vec);
 }

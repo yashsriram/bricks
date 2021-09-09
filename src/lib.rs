@@ -12,7 +12,6 @@ pub struct BasePlugins;
 
 impl PluginGroup for BasePlugins {
     fn build(&mut self, group: &mut PluginGroupBuilder) {
-        group.add(WGPUOptionsPlugin);
         group.add(bevy::core::CorePlugin::default());
         group.add(bevy::transform::TransformPlugin::default());
         group.add(bevy::diagnostic::DiagnosticsPlugin::default());
@@ -21,6 +20,7 @@ impl PluginGroup for BasePlugins {
         group.add(bevy::asset::AssetPlugin::default());
         group.add(bevy::render::RenderPlugin::default());
         group.add(bevy::winit::WinitPlugin::default());
+        group.add(WGPUOptionsPlugin);
         group.add(bevy::wgpu::WgpuPlugin::default());
         group.add(vis::MinimalRenderPlugin);
         group.add(CameraPlugin);

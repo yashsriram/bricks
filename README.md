@@ -22,9 +22,8 @@
         - [ ] source code
         - [ ] demos
 - `Vis`
-    - [x] wireframe rendering of a mesh, with color, minimal, speed (stress test)
+    - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
     - [x] 3D Perspective FPS camera
-    - [ ] Render multiple meshes for a single entity
 - `State`, `StateSpace`
     - [x] Traits
     - [x] RectangularSpace
