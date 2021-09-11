@@ -5,6 +5,7 @@ use bricks::plan::graph::search::spanning::propagations::*;
 use bricks::plan::graph::search::spanning::TreeSearch;
 use bricks::plan::spaces::*;
 use bricks::*;
+use std::time::{Duration, Instant};
 
 fn main() {
     App::build()
@@ -19,7 +20,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let space = RectangleSpace {
         size: Vec2::new(54.0, 20.0),
     };
+    let start = Instant::now();
     let mut prm = PRM::with_num_samples(space, 30000, 0.9);
+    println!("{:?}", Instant::now() - start);
     let idxes = prm.add(vec![Point2::new(0.3, 0.7), Point2::new(19.5, 17.3)], 0.9);
     println!("Number of edges = ~{:?}", prm.graph.num_edges());
     let search_meshes = vec![
