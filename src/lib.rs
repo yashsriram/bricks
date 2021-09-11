@@ -1,3 +1,4 @@
+pub mod intersect;
 pub mod plan;
 pub mod vis;
 
