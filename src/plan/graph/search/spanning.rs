@@ -2,43 +2,54 @@ use super::super::Graph;
 use crate::plan::{State, StateSpace};
 use bevy::render::mesh::{Indices, Mesh};
 use bevy::render::pipeline::PrimitiveTopology;
+use ordered_float::OrderedFloat;
 use std::cmp::Ordering;
+use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
 
-pub trait Propagation<S: StateSpace>: Debug + Sized {
-    fn as_start(my_vertex_state: &S::State, stop_vertex_state: &S::State) -> (f32, Self);
+pub trait Propagation<SS: StateSpace>: Debug + Sized {
+    fn as_start(
+        my_vertex_state: &SS::State,
+        stop_vertex_state: &SS::State,
+    ) -> (OrderedFloat<f32>, Self);
 
     fn as_adj(
-        prev_vertex_state: &S::State,
-        my_vertex_state: &S::State,
-        stop_vertex_state: &S::State,
+        prev_vertex_state: &SS::State,
+        my_vertex_state: &SS::State,
+        stop_vertex_state: &SS::State,
         parent: &Self,
-    ) -> (f32, Self);
+    ) -> (OrderedFloat<f32>, Self);
 }
 
 pub mod propagations {
     use super::Propagation;
     use crate::plan::{State, StateSpace};
+    use ordered_float::OrderedFloat;
 
     #[derive(Debug)]
     pub struct DFSLike {
         order: isize,
     }
 
-    impl<S: StateSpace> Propagation<S> for DFSLike {
-        fn as_start(_: &S::State, _: &S::State) -> (f32, Self) {
+    impl<SS: StateSpace> Propagation<SS> for DFSLike {
+        fn as_start(_: &SS::State, _: &SS::State) -> (OrderedFloat<f32>, Self) {
             let me = Self { order: -0 };
-            (me.order as f32, me)
+            (OrderedFloat(me.order as f32), me)
         }
 
-        fn as_adj(_: &S::State, _: &S::State, _: &S::State, parent: &Self) -> (f32, Self) {
+        fn as_adj(
+            _: &SS::State,
+            _: &SS::State,
+            _: &SS::State,
+            parent: &Self,
+        ) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 order: parent.order - 1,
             };
-            (me.order as f32, me)
+            (OrderedFloat(me.order as f32), me)
         }
     }
 
@@ -47,19 +58,24 @@ pub mod propagations {
         jumps_from_start: usize,
     }
 
-    impl<S: StateSpace> Propagation<S> for BFSLike {
-        fn as_start(_: &S::State, _: &S::State) -> (f32, Self) {
+    impl<SS: StateSpace> Propagation<SS> for BFSLike {
+        fn as_start(_: &SS::State, _: &SS::State) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 jumps_from_start: 0,
             };
-            (me.jumps_from_start as f32, me)
+            (OrderedFloat(me.jumps_from_start as f32), me)
         }
 
-        fn as_adj(_: &S::State, _: &S::State, _: &S::State, parent: &Self) -> (f32, Self) {
+        fn as_adj(
+            _: &SS::State,
+            _: &SS::State,
+            _: &SS::State,
+            parent: &Self,
+        ) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 jumps_from_start: parent.jumps_from_start + 1,
             };
-            (me.jumps_from_start as f32, me)
+            (OrderedFloat(me.jumps_from_start as f32), me)
         }
     }
 
@@ -68,24 +84,24 @@ pub mod propagations {
         dist_from_start: f32,
     }
 
-    impl<S: StateSpace> Propagation<S> for UCSLike {
-        fn as_start(_: &S::State, _: &S::State) -> (f32, Self) {
+    impl<SS: StateSpace> Propagation<SS> for UCSLike {
+        fn as_start(_: &SS::State, _: &SS::State) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 dist_from_start: 0.0,
             };
-            (me.dist_from_start as f32, me)
+            (OrderedFloat(me.dist_from_start), me)
         }
 
         fn as_adj(
-            prev_vertex_state: &S::State,
-            my_vertex_state: &S::State,
-            _: &S::State,
+            prev_vertex_state: &SS::State,
+            my_vertex_state: &SS::State,
+            _: &SS::State,
             parent: &Self,
-        ) -> (f32, Self) {
+        ) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 dist_from_start: parent.dist_from_start + prev_vertex_state.dist(&my_vertex_state),
             };
-            (me.dist_from_start as f32, me)
+            (OrderedFloat(me.dist_from_start), me)
         }
     }
 
@@ -94,28 +110,31 @@ pub mod propagations {
         dist_from_start: f32,
     }
 
-    impl<S: StateSpace> Propagation<S> for AStarLike {
-        fn as_start(my_vertex_state: &S::State, stop_vertex_state: &S::State) -> (f32, Self) {
+    impl<SS: StateSpace> Propagation<SS> for AStarLike {
+        fn as_start(
+            my_vertex_state: &SS::State,
+            stop_vertex_state: &SS::State,
+        ) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 dist_from_start: 0.0,
             };
             (
-                me.dist_from_start + my_vertex_state.dist(&stop_vertex_state),
+                OrderedFloat(me.dist_from_start + my_vertex_state.dist(&stop_vertex_state)),
                 me,
             )
         }
 
         fn as_adj(
-            prev_vertex_state: &S::State,
-            my_vertex_state: &S::State,
-            stop_vertex_state: &S::State,
+            prev_vertex_state: &SS::State,
+            my_vertex_state: &SS::State,
+            stop_vertex_state: &SS::State,
             parent: &Self,
-        ) -> (f32, Self) {
+        ) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 dist_from_start: parent.dist_from_start + prev_vertex_state.dist(&my_vertex_state),
             };
             (
-                me.dist_from_start + my_vertex_state.dist(&stop_vertex_state),
+                OrderedFloat(me.dist_from_start + my_vertex_state.dist(&stop_vertex_state)),
                 me,
             )
         }
@@ -126,28 +145,31 @@ pub mod propagations {
         dist_from_start: f32,
     }
 
-    impl<S: StateSpace> Propagation<S> for W2AStarLike {
-        fn as_start(my_vertex_state: &S::State, stop_vertex_state: &S::State) -> (f32, Self) {
+    impl<SS: StateSpace> Propagation<SS> for W2AStarLike {
+        fn as_start(
+            my_vertex_state: &SS::State,
+            stop_vertex_state: &SS::State,
+        ) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 dist_from_start: 0.0,
             };
             (
-                me.dist_from_start + my_vertex_state.dist(&stop_vertex_state),
+                OrderedFloat(me.dist_from_start + my_vertex_state.dist(&stop_vertex_state)),
                 me,
             )
         }
 
         fn as_adj(
-            prev_vertex_state: &S::State,
-            my_vertex_state: &S::State,
-            stop_vertex_state: &S::State,
+            prev_vertex_state: &SS::State,
+            my_vertex_state: &SS::State,
+            stop_vertex_state: &SS::State,
             parent: &Self,
-        ) -> (f32, Self) {
+        ) -> (OrderedFloat<f32>, Self) {
             let me = Self {
                 dist_from_start: parent.dist_from_start + prev_vertex_state.dist(&my_vertex_state),
             };
             (
-                me.dist_from_start + my_vertex_state.dist(&stop_vertex_state) * 2.0,
+                OrderedFloat(me.dist_from_start + my_vertex_state.dist(&stop_vertex_state) * 2.0),
                 me,
             )
         }
@@ -156,7 +178,7 @@ pub mod propagations {
 
 struct CostPriority {
     vertex_idx: usize,
-    vertex_cost: f32,
+    vertex_cost: OrderedFloat<f32>,
 }
 
 impl PartialEq for CostPriority {
@@ -169,17 +191,7 @@ impl Eq for CostPriority {}
 
 impl Ord for CostPriority {
     fn cmp(&self, other: &Self) -> Ordering {
-        let other_cost = other.vertex_cost;
-        let self_cost = self.vertex_cost;
-        if other_cost == f32::NAN && self_cost == f32::NAN {
-            Ordering::Equal
-        } else if other_cost != f32::NAN && self_cost == f32::NAN {
-            Ordering::Less
-        } else if other_cost == f32::NAN && self_cost != f32::NAN {
-            Ordering::Greater
-        } else {
-            other_cost.partial_cmp(&self_cost).unwrap()
-        }
+        self.vertex_cost.cmp(&other.vertex_cost)
     }
 }
 
@@ -190,8 +202,8 @@ impl PartialOrd for CostPriority {
 }
 
 #[derive(Debug)]
-pub struct TreeSearch<'a, S: StateSpace, F: Propagation<S>> {
-    graph: &'a Graph<S>,
+pub struct TreeSearch<'a, SS: StateSpace, F: Propagation<SS>> {
+    graph: &'a Graph<SS>,
     start_idx: usize,
     stop_idx: usize,
     parent_map: HashMap<usize, Option<usize>>,
@@ -199,13 +211,13 @@ pub struct TreeSearch<'a, S: StateSpace, F: Propagation<S>> {
     tree: HashMap<usize, F>,
 }
 
-impl<'a, S: StateSpace, F: Propagation<S>> TreeSearch<'a, S, F> {
-    pub fn try_search(graph: &'a Graph<S>, start_idx: usize, stop_idx: usize) -> Self {
+impl<'a, SS: StateSpace, F: Propagation<SS>> TreeSearch<'a, SS, F> {
+    pub fn try_search(graph: &'a Graph<SS>, start_idx: usize, stop_idx: usize) -> Self {
         Self::try_search_with_alloc(graph, start_idx, stop_idx, 1.0)
     }
 
     pub fn try_search_with_alloc(
-        graph: &'a Graph<S>,
+        graph: &'a Graph<SS>,
         start_idx: usize,
         stop_idx: usize,
         initial_alloc_frac: f32,
@@ -223,14 +235,14 @@ impl<'a, S: StateSpace, F: Propagation<S>> TreeSearch<'a, S, F> {
         let mut tree = HashMap::with_capacity(collec_alloc_size);
         tree.insert(start_idx, start_search_state);
         let mut fringe = BinaryHeap::with_capacity(collec_alloc_size);
-        fringe.push(CostPriority {
+        fringe.push(Reverse(CostPriority {
             vertex_idx: start_idx,
             vertex_cost: start_cost,
-        });
-        while let Some(CostPriority {
+        }));
+        while let Some(Reverse(CostPriority {
             vertex_idx: curr_idx,
             ..
-        }) = fringe.pop()
+        })) = fringe.pop()
         {
             if curr_idx == stop_idx {
                 break;
@@ -245,10 +257,10 @@ impl<'a, S: StateSpace, F: Propagation<S>> TreeSearch<'a, S, F> {
                     );
                     parent_map.insert(adj_idx, Some(curr_idx));
                     tree.insert(adj_idx, adj_search_state);
-                    fringe.push(CostPriority {
+                    fringe.push(Reverse(CostPriority {
                         vertex_idx: adj_idx,
                         vertex_cost: adj_cost,
-                    });
+                    }));
                 }
             }
         }
@@ -260,7 +272,7 @@ impl<'a, S: StateSpace, F: Propagation<S>> TreeSearch<'a, S, F> {
             fringe: fringe
                 .into_sorted_vec()
                 .into_iter()
-                .map(|CostPriority { vertex_idx, .. }| vertex_idx)
+                .map(|Reverse(CostPriority { vertex_idx, .. })| vertex_idx)
                 .collect(),
             tree: tree,
         }
@@ -301,8 +313,8 @@ impl<'a, S: StateSpace, F: Propagation<S>> TreeSearch<'a, S, F> {
     }
 }
 
-impl<'a, S: StateSpace, F: Propagation<S>> From<TreeSearch<'a, S, F>> for Mesh {
-    fn from(search: TreeSearch<'a, S, F>) -> Mesh {
+impl<'a, SS: StateSpace, F: Propagation<SS>> From<TreeSearch<'a, SS, F>> for Mesh {
+    fn from(search: TreeSearch<'a, SS, F>) -> Mesh {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let flattened_tree: Vec<usize> = search
             .parent_map

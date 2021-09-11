@@ -26,11 +26,8 @@
     - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
     - [x] 3D Perspective FPS camera
 - `State`, `StateSpace`
-    - [x] Traits
     - [x] SphereSpace (sqrt?)
-- `Graph`
-    - [x] On a `StateSpace`
-    - [x] Vertex = `StateSpace::State` +  `Set<VertexIdx>`
+- `Graph` on a `StateSpace`; Vertex = (`StateSpace::State`,  `Set<VertexIdx>`)
 - `TreeSearch` on `Graph`
     - [x] start, stop, goal, max idxs
     - [x] handle stop not reached -> reachable subgraph explored
@@ -73,10 +70,10 @@ graphics-viz, rust libs create/contribute.
 
 #### pp
 - Path planning
-- Path planning with fancy abstractions (joint spaces) = motion planning
 - Path planning with times at vertices = trajectory planning?
+- Path planning with fancy abstractions (joint spaces) = motion planning
 - Tasks as Nd space search
-    1. Locomotion tasks (circle, diffdrive, line, bicycle, etc...)
+    1. Locomotion tasks
     1. Kinematic chain (serial manipulator) e.g. Inverse kinematics
     1. Rocket (gravity wells + orbits + transfers)
     1. Ship (non-holonomic + water sim + replanning)
@@ -119,10 +116,7 @@ graphics-viz, rust libs create/contribute.
 1. Speedup stuff e.g. Parallelization.
 1. Combining classical, ML, DL, RL and any L sensing.
 
-#### dyna
-- dynamics crate, models of moving.
-1. Speedup stuff e.g. Parallelization.
-
-#### ctrl
+#### dyna and ctrl
+- dynamics crate, models of moving. (velocity, diffdrive, bicycle, etc...)
 - control crate, controls dyna models.
 1. Speedup stuff e.g. Parallelization.
