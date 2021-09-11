@@ -21,19 +21,16 @@
     - [ ] consume <- motion-planning repo
         - [ ] source code
         - [ ] demos
+    - [ ] Test on datasets
 - `Vis`
     - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
     - [x] 3D Perspective FPS camera
 - `State`, `StateSpace`
     - [x] Traits
-    - [x] RectangularSpace
-    - [x] CircularSpace (role of sqrt)
-    - [x] CuboidSpace
     - [x] SphereSpace (sqrt?)
 - `Graph`
     - [x] On a `StateSpace`
     - [x] Vertex = `StateSpace::State` +  `Set<VertexIdx>`
-    - [x] To mesh
 - `TreeSearch` on `Graph`
     - [x] start, stop, goal, max idxs
     - [x] handle stop not reached -> reachable subgraph explored
@@ -47,9 +44,7 @@
     - [x] Control initial alloc size of tree and fringe
     - [x] Get path to a goal, get path to stop, store start, stop, max idxs
     - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority => Get reference of underlying graph
-    - [x] Vis
-    - [x] BFS, UCS, A\* search states
-- PRM
+- `PRM` on `StateSpace`
     - [x] Create a `Graph<StateSpace>`
     - [x] Sampling from `StateSpace`
     - [x] Connecting `Vertices<State>` using dist() trait fn and edge len
@@ -60,28 +55,10 @@
 - actual problem to geometric search problem formulation
 - meshes, transform, drawing options
 - geometric entity description
-    - [ ] Sphere
-    - [ ] Line
 - single state intersections (instantaneous)
-    - [ ] sphere sphere
-    - [ ] line-seg sphere
-    - [ ] line-seg line-seg
 - interval state intersections (ccd)
-    - [ ] sphere sphere
-    - [ ] line-seg sphere
-    - [ ] line-seg line-seg
+- agent dynamics and control, integration
 - problem description as composition of simple things like geometric entity, start, goal, option<obstacles>,
-- RRT
-    - [ ] sampling
-    - [ ] growable
-    - [ ] searches
-- RRT\*
-    - [ ] sampling
-    - [ ] growable
-    - [ ] searches
-- Crowds
-    - [ ] Boids
-    - [ ] TTC
 
 #### viz tools
 graphics-viz, rust libs create/contribute.
