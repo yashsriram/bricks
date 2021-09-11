@@ -15,6 +15,7 @@ pub struct BasePlugins;
 
 impl PluginGroup for BasePlugins {
     fn build(&mut self, group: &mut PluginGroupBuilder) {
+        group.add(DefaultResourcesPlugin);
         group.add(bevy::core::CorePlugin::default());
         group.add(bevy::transform::TransformPlugin::default());
         group.add(bevy::diagnostic::DiagnosticsPlugin::default());
@@ -28,6 +29,15 @@ impl PluginGroup for BasePlugins {
         group.add(vis::MinimalRenderPlugin);
         group.add(CameraPlugin);
         group.add(FPSTitlePlugin);
+    }
+}
+
+pub struct DefaultResourcesPlugin;
+
+impl Plugin for DefaultResourcesPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.insert_resource(Msaa { samples: 1 })
+            .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)));
     }
 }
 

@@ -5,12 +5,10 @@ use bricks::plan::graph::search::spanning::propagations::*;
 use bricks::plan::graph::search::spanning::TreeSearch;
 use bricks::plan::spaces::*;
 use bricks::*;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 fn main() {
     App::build()
-        .insert_resource(Msaa { samples: 1 })
-        .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_plugins(BasePlugins)
         .add_startup_system(setup.system())
         .run();

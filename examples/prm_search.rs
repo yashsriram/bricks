@@ -8,8 +8,6 @@ use bricks::*;
 
 fn main() {
     App::build()
-        .insert_resource(Msaa { samples: 1 })
-        .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_plugins(BasePlugins)
         .add_startup_system(setup.system())
         .run();
