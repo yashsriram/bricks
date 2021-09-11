@@ -1,4 +1,4 @@
-pub mod ripple {
+pub mod spanning {
     use super::super::Graph;
     use crate::plan::{State, StateSpace};
     use bevy::render::mesh::{Indices, Mesh};
