@@ -20,11 +20,12 @@ pub mod spaces {
     use bevy::prelude::*;
     use bevy::render::mesh::{Indices, Mesh};
     use bevy::render::pipeline::PrimitiveTopology;
+    use nalgebra::{Point2, Point3};
     use rand::{distributions::Standard, thread_rng, Rng};
 
-    impl State for Vec2 {
+    impl State for Point2<f32> {
         fn dist(&self, other: &Self) -> f32 {
-            (*self - *other).length()
+            (self - other).norm()
         }
 
         fn project_to_3d(&self) -> [f32; 3] {
@@ -38,14 +39,14 @@ pub mod spaces {
     }
 
     impl StateSpace for RectangleSpace {
-        type State = Vec2;
+        type State = Point2<f32>;
 
         fn sample_batch(&self, num_samples: usize) -> Vec<Self::State> {
             let mut rng = thread_rng();
-            let samples: Vec<Vec2> = (&mut rng)
+            let samples: Vec<Point2<f32>> = (&mut rng)
                 .sample_iter(Standard)
                 .take(num_samples)
-                .map(|(x, y): (f32, f32)| Vec2::new(x * self.size.x, y * self.size.y))
+                .map(|(x, y): (f32, f32)| Point2::new(x * self.size.x, y * self.size.y))
                 .collect();
             samples
         }
@@ -75,16 +76,16 @@ pub mod spaces {
     }
 
     impl StateSpace for CircleSpace {
-        type State = Vec2;
+        type State = Point2<f32>;
 
         fn sample_batch(&self, num_samples: usize) -> Vec<Self::State> {
             let mut rng = thread_rng();
-            let samples: Vec<Vec2> = (&mut rng)
+            let samples: Vec<Point2<f32>> = (&mut rng)
                 .sample_iter(Standard)
                 .take(num_samples)
                 .map(|(r, theta): (f32, f32)| {
                     let r = r.sqrt();
-                    Vec2::new(
+                    Point2::new(
                         r * self.radius * (theta * 2.0 * std::f32::consts::PI).cos(),
                         r * self.radius * (theta * 2.0 * std::f32::consts::PI).sin(),
                     )
@@ -111,9 +112,9 @@ pub mod spaces {
         }
     }
 
-    impl State for Vec3 {
+    impl State for Point3<f32> {
         fn dist(&self, other: &Self) -> f32 {
-            (*self - *other).length()
+            (self - other).norm()
         }
 
         fn project_to_3d(&self) -> [f32; 3] {
@@ -127,15 +128,15 @@ pub mod spaces {
     }
 
     impl StateSpace for CuboidSpace {
-        type State = Vec3;
+        type State = Point3<f32>;
 
         fn sample_batch(&self, num_samples: usize) -> Vec<Self::State> {
             let mut rng = thread_rng();
-            let samples: Vec<Vec3> = (&mut rng)
+            let samples: Vec<Point3<f32>> = (&mut rng)
                 .sample_iter(Standard)
                 .take(num_samples)
                 .map(|(x, y, z): (f32, f32, f32)| {
-                    Vec3::new(x * self.size.x, y * self.size.y, z * self.size.z)
+                    Point3::new(x * self.size.x, y * self.size.y, z * self.size.z)
                 })
                 .collect();
             samples
@@ -172,16 +173,16 @@ pub mod spaces {
     }
 
     impl StateSpace for SphereSpace {
-        type State = Vec3;
+        type State = Point3<f32>;
 
         fn sample_batch(&self, num_samples: usize) -> Vec<Self::State> {
             let mut rng = thread_rng();
-            let samples: Vec<Vec3> = (&mut rng)
+            let samples: Vec<Point3<f32>> = (&mut rng)
                 .sample_iter(Standard)
                 .take(num_samples)
                 .map(|(r, phi, theta): (f32, f32, f32)| {
                     let r = r.sqrt();
-                    Vec3::new(
+                    Point3::new(
                         r * self.radius
                             * (theta * 2.0 * std::f32::consts::PI).cos()
                             * (phi * 2.0 * std::f32::consts::PI).cos(),

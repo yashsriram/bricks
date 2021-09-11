@@ -17,7 +17,19 @@ pub struct Graph<S: StateSpace> {
     vertices: Vec<Vertex<S>>,
 }
 
-impl<S: StateSpace> Graph<S> {}
+impl<S: StateSpace> Graph<S> {
+    pub fn num_edges(&self) -> usize {
+        self.vertices
+            .iter()
+            .map(
+                |Vertex {
+                     state: _,
+                     adjacencies,
+                 }| adjacencies.len(),
+            )
+            .sum()
+    }
+}
 
 impl<S: StateSpace> From<Graph<S>> for Mesh {
     fn from(graph: Graph<S>) -> Mesh {

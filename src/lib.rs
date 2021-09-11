@@ -1,6 +1,8 @@
 pub mod plan;
 pub mod vis;
 
+pub use nalgebra as na;
+
 use bevy::app::{AppBuilder, Plugin, PluginGroup, PluginGroupBuilder};
 use bevy::diagnostic::Diagnostics;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;

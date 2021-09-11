@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bricks::na::{Point2, Point3};
 use bricks::plan::graph::prm::PRM;
 use bricks::plan::graph::search::spanning::propagations::*;
 use bricks::plan::graph::search::spanning::TreeSearch;
@@ -26,7 +27,7 @@ fn rect(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         size: Vec2::new(12.0, 10.0),
     };
     let mut prm = PRM::with_num_samples(space, 1500, 0.5);
-    let idxes = prm.add(vec![Vec2::new(0.3, 0.7), Vec2::new(9.5, 7.3)], 0.7);
+    let idxes = prm.add(vec![Point2::new(0.3, 0.7), Point2::new(9.5, 7.3)], 0.7);
     let search_meshes = vec![
         Mesh::from(TreeSearch::<_, DFSLike>::try_search(
             &prm.graph, idxes[0], idxes[1],
@@ -74,7 +75,7 @@ fn cuboid(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
     };
     let mut prm = PRM::with_num_samples(space, 2000, 1.0);
     let idxes = prm.add(
-        vec![Vec3::new(0.3, 0.7, 0.5), Vec3::new(9.5, 7.3, 4.0)],
+        vec![Point3::new(0.3, 0.7, 0.5), Point3::new(9.5, 7.3, 4.0)],
         1.0,
     );
     let search_meshes = vec![
@@ -121,7 +122,7 @@ fn cuboid(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
 fn circle(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
     let space = CircleSpace { radius: 5.0 };
     let mut prm = PRM::with_num_samples(space, 2000, 0.5);
-    let idxes = prm.add(vec![Vec2::new(-2.3, -2.7), Vec2::new(2.5, 2.3)], 1.0);
+    let idxes = prm.add(vec![Point2::new(-2.3, -2.7), Point2::new(2.5, 2.3)], 1.0);
     let search_meshes = vec![
         Mesh::from(TreeSearch::<_, DFSLike>::try_search(
             &prm.graph, idxes[0], idxes[1],
@@ -167,7 +168,7 @@ fn sphere(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
     let space = SphereSpace { radius: 5.0 };
     let mut prm = PRM::with_num_samples(space, 5000, 0.5);
     let idxes = prm.add(
-        vec![Vec3::new(-2.3, -2.7, -1.0), Vec3::new(2.5, 2.3, 1.0)],
+        vec![Point3::new(-2.3, -2.7, -1.0), Point3::new(2.5, 2.3, 1.0)],
         1.0,
     );
     let search_meshes = vec![
