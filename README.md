@@ -22,6 +22,8 @@
         - [ ] source code
         - [ ] demos
     - [ ] Test on datasets
+        - Moving AI lab
+        - Open Street maps
 - `Vis`
     - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
     - [x] 3D Perspective FPS camera
@@ -46,16 +48,9 @@
     - [x] Sampling from `StateSpace`
     - [x] Connecting `Vertices<State>` using dist() trait fn and edge len
     - [x] Multi (agent) searchable from `Graph`
-    - [ ] Spatial data structure
-    - [ ] Growable
-    - [ ] Modifiable (vertex and edge culling)
-- actual problem to geometric search problem formulation
-- meshes, transform, drawing options
-- geometric entity description
 - single state intersections (instantaneous)
 - interval state intersections (ccd)
-- agent dynamics and control, integration
-- problem description as composition of simple things like geometric entity, start, goal, option<obstacles>,
+- actual problem to geometric search problem formulation as composition of simple things like geometric entity, start, goal, option<obstacles>,
 
 #### viz tools
 graphics-viz, rust libs create/contribute.
@@ -118,5 +113,6 @@ graphics-viz, rust libs create/contribute.
 
 #### dyna and ctrl
 - dynamics crate, models of moving. (velocity, diffdrive, bicycle, etc...)
+- agent dynamics and control, integration
 - control crate, controls dyna models.
 1. Speedup stuff e.g. Parallelization.

@@ -1,8 +1,8 @@
 [package]
 name = "bricks"
 version = "0.1.0"
-authors = ["Yashasvi Sriram <yash.3997@gmail.com>"]
 edition = "2018"
+authors = ["Yashasvi Sriram <yash.3997@gmail.com>"]
 
 [dependencies]
 rand = "0.8.4"
