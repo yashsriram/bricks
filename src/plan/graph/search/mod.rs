@@ -1,8 +1,6 @@
 pub mod spanning {
     use super::super::Graph;
-    use crate::plan::{State, StateSpace};
-    use bevy::render::mesh::{Indices, Mesh};
-    use bevy::render::pipeline::PrimitiveTopology;
+    use crate::plan::StateSpace;
     use ordered_float::OrderedFloat;
     use std::cmp::Ordering;
     use std::cmp::Reverse;
@@ -209,11 +207,11 @@ pub mod spanning {
 
     #[derive(Debug)]
     pub struct TreeSearch<'a, SS: StateSpace, F: Propagation<SS>> {
-        graph: &'a Graph<SS>,
+        pub(crate) graph: &'a Graph<SS>,
         start_idx: usize,
         stop_idx: usize,
-        parent_map: HashMap<usize, Option<usize>>,
-        fringe: HashSet<usize>,
+        pub(crate) parent_map: HashMap<usize, Option<usize>>,
+        pub(crate) fringe: HashSet<usize>,
         tree: HashMap<usize, F>,
     }
 
@@ -316,46 +314,6 @@ pub mod spanning {
                 1 => None,
                 _ => Some(path),
             }
-        }
-    }
-
-    impl<'a, SS: StateSpace, F: Propagation<SS>> From<TreeSearch<'a, SS, F>> for Mesh {
-        fn from(search: TreeSearch<'a, SS, F>) -> Mesh {
-            let mut mesh = Mesh::new(PrimitiveTopology::LineList);
-            let flattened_tree: Vec<usize> = search
-                .parent_map
-                .iter()
-                .map(|(&child_idx, &parent_idx)| vec![child_idx, parent_idx.unwrap_or(child_idx)])
-                .flatten()
-                .collect();
-            let positions: Vec<[f32; 3]> = flattened_tree
-                .iter()
-                .map(|idx| search.graph.vertices[*idx].state.project_to_3d())
-                .collect();
-            let indices: Vec<u32> = positions
-                .iter()
-                .enumerate()
-                .map(|(i, _)| i as u32)
-                .collect();
-            let indices = Indices::U32(indices);
-            mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
-            mesh.set_indices(Some(indices));
-            let vertex_colors: Vec<[f32; 4]> = flattened_tree
-                .iter()
-                .map(|idx| {
-                    if *idx == search.start_idx {
-                        [1.0, 1.0, 0.0, 1.0]
-                    } else if *idx == search.stop_idx {
-                        [0.0, 1.0, 0.0, 1.0]
-                    } else if search.fringe.contains(idx) {
-                        [0.0, 1.0, 1.0, 1.0]
-                    } else {
-                        [1.0, 0.0, 1.0, 0.2]
-                    }
-                })
-                .collect();
-            mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
-            mesh
         }
     }
 }

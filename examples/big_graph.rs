@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use bricks::na::Point2;
+use bricks::na::{Point2, Vector2};
 use bricks::plan::graph::prm::PRM;
 use bricks::plan::graph::search::spanning::propagations::*;
 use bricks::plan::graph::search::spanning::TreeSearch;
 use bricks::plan::spaces::*;
+use bricks::vis::AsEntity;
 use bricks::*;
 use std::time::Instant;
 
@@ -16,10 +17,10 @@ fn main() {
 
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let space = RectangleSpace {
-        size: Vec2::new(54.0, 20.0),
+        size: Vector2::new(54.0, 20.0),
     };
     let start = Instant::now();
-    let mut prm = PRM::with_num_samples(space, 30000, 0.9);
+    let mut prm = PRM::with_num_samples(space, 60000, 0.9);
     println!("{:?}", Instant::now() - start);
     let idxes = prm.add(vec![Point2::new(0.3, 0.7), Point2::new(19.5, 17.3)], 0.9);
     println!("Number of edges = ~{:?}", prm.graph.num_edges());
@@ -41,13 +42,8 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         )),
     ];
 
-    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
-    commands.spawn_bundle(MeshBundle {
-        mesh: meshes.add(prm.state_space.into()),
-        render_pipelines: RenderPipelines::from_handles(handles.iter()),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
-        ..Default::default()
-    });
+    let handles = vec![vis::NON_FILL_PIPELINE.typed()];
+    prm.state_space.spawn(&mut commands, &mut meshes);
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.graph.into()),
         render_pipelines: RenderPipelines::from_handles(handles.iter()),

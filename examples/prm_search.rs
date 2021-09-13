@@ -44,7 +44,7 @@ fn rect(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
+    let handles = vec![vis::NON_FILL_PIPELINE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
         render_pipelines: RenderPipelines::from_handles(handles.iter()),
@@ -94,7 +94,7 @@ fn cuboid(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
+    let handles = vec![vis::NON_FILL_PIPELINE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
         render_pipelines: RenderPipelines::from_handles(handles.iter()),
@@ -139,7 +139,7 @@ fn circle(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
+    let handles = vec![vis::NON_FILL_PIPELINE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
         render_pipelines: RenderPipelines::from_handles(handles.iter()),
@@ -187,7 +187,7 @@ fn sphere(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
         )),
     ];
 
-    let handles = vec![vis::WIREFRAME_PIPELINE_HANDLE.typed()];
+    let handles = vec![vis::NON_FILL_PIPELINE.typed()];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(prm.state_space.into()),
         render_pipelines: RenderPipelines::from_handles(handles.iter()),

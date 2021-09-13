@@ -35,7 +35,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
             .spawn_bundle(MeshBundle {
                 mesh: mesh.clone(),
                 render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                    vis::WIREFRAME_PIPELINE_HANDLE.typed(),
+                    vis::NON_FILL_PIPELINE.typed(),
                 )]),
                 visible: Visible {
                     is_visible: true,
