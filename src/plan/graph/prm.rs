@@ -33,9 +33,9 @@ impl<S: StateSpace> PRM<S> {
         }
     }
 
-    pub fn add(&mut self, states: Vec<S::State>, edge_len: f32) -> Vec<usize> {
+    pub fn add<const N: usize>(&mut self, states: [S::State; N], edge_len: f32) -> [usize; N] {
         let prev_graph_size = self.graph.vertices.len();
-        for state in states.into_iter() {
+        for state in IntoIterator::into_iter(states) {
             self.graph.vertices.push(Vertex {
                 state: state,
                 adjacencies: HashSet::new(),
@@ -53,6 +53,10 @@ impl<S: StateSpace> PRM<S> {
                 }
             }
         }
-        (prev_graph_size..self.graph.vertices.len()).collect()
+        let mut idxes = [0; N];
+        for (i, idx) in (prev_graph_size..self.graph.vertices.len()).enumerate() {
+            idxes[i] = idx;
+        }
+        idxes
     }
 }

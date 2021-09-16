@@ -206,21 +206,25 @@ pub mod spanning {
     }
 
     #[derive(Debug)]
-    pub struct TreeSearch<'a, SS: StateSpace, F: Propagation<SS>> {
+    pub struct TreeSearch<'a, SS: StateSpace> {
         pub(crate) graph: &'a Graph<SS>,
         start_idx: usize,
         stop_idx: usize,
         pub(crate) parent_map: HashMap<usize, Option<usize>>,
         pub(crate) fringe: HashSet<usize>,
-        tree: HashMap<usize, F>,
+        // tree: HashMap<usize, F>,
     }
 
-    impl<'a, SS: StateSpace, F: Propagation<SS>> TreeSearch<'a, SS, F> {
-        pub fn try_search(graph: &'a Graph<SS>, start_idx: usize, stop_idx: usize) -> Self {
-            Self::try_search_with_alloc(graph, start_idx, stop_idx, 1.0)
+    impl<'a, SS: StateSpace> TreeSearch<'a, SS> {
+        pub fn try_search<F: Propagation<SS>>(
+            graph: &'a Graph<SS>,
+            start_idx: usize,
+            stop_idx: usize,
+        ) -> TreeSearch<'a, SS> {
+            Self::try_search_with_alloc::<F>(graph, start_idx, stop_idx, 1.0)
         }
 
-        pub fn try_search_with_alloc(
+        pub fn try_search_with_alloc<F: Propagation<SS>>(
             graph: &'a Graph<SS>,
             start_idx: usize,
             stop_idx: usize,
@@ -278,7 +282,7 @@ pub mod spanning {
                     .into_iter()
                     .map(|Reverse(CostPriority { vertex_idx, .. })| vertex_idx)
                     .collect(),
-                tree: tree,
+                // tree: tree,
             }
         }
 

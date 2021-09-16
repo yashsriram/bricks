@@ -6,72 +6,95 @@ use bevy::prelude::*;
 use bevy::render::mesh::{Indices, Mesh};
 use bevy::render::pipeline::PrimitiveTopology;
 
-pub trait AsEntity: Sized
-where
-    Mesh: From<Self>,
-{
-    fn spawn(self, commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>) {
-        commands.spawn_bundle(MeshBundle {
-            mesh: meshes.add(self.into()),
-            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
-            ..Default::default()
-        });
+pub trait AsEntity: Sized {
+    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle>;
+
+    fn spawn(
+        self,
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        transform: Transform,
+    ) -> Entity {
+        commands
+            .spawn_bundle(MeshBundle {
+                transform: transform,
+                ..Default::default()
+            })
+            .with_children(|parent| {
+                let child_bundle_list: Vec<MeshBundle> = self.into_mesh_bundles(meshes);
+                for child_bundle in child_bundle_list.into_iter() {
+                    parent.spawn_bundle(child_bundle);
+                }
+            })
+            .id()
     }
 }
 
 use crate::plan::spaces::*;
 
-impl From<RectangleSpace> for Mesh {
-    fn from(s: RectangleSpace) -> Mesh {
+impl AsEntity for RectangleSpace {
+    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
         let positions = vec![
             [0.0, 0.0, 0.0],
-            [s.size.x, 0.0, 0.0],
-            [s.size.x, s.size.y, 0.0],
-            [0.0, s.size.y, 0.0],
+            [self.size.x, 0.0, 0.0],
+            [self.size.x, self.size.y, 0.0],
+            [0.0, self.size.y, 0.0],
         ];
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         let indices = Indices::U32(vec![0, 1, 2, 3, 0]);
         mesh.set_indices(Some(indices));
         let colors = vec![[1.0, 1.0, 0.0, 0.1]; 4];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-        mesh
+        vec![MeshBundle {
+            mesh: meshes.add(mesh),
+            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            draw: Default::default(),
+            visible: Default::default(),
+            main_pass: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+        }]
     }
 }
 
-impl AsEntity for RectangleSpace {}
-
-impl From<CircleSpace> for Mesh {
-    fn from(s: CircleSpace) -> Mesh {
+impl AsEntity for CircleSpace {
+    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
         let num_partitions: usize = 18;
         let positions: Vec<[f32; 3]> = (0..=num_partitions)
             .map(|i| 2.0 * std::f32::consts::PI / num_partitions as f32 * i as f32)
-            .map(|theta| [s.radius * theta.cos(), s.radius * theta.sin(), 0.0])
+            .map(|theta| [self.radius * theta.cos(), self.radius * theta.sin(), 0.0])
             .collect();
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         let indices = Indices::U32((0..=num_partitions).map(|i| i as u32).collect());
         mesh.set_indices(Some(indices));
         let colors = vec![[1.0, 1.0, 0.0, 0.1]; num_partitions + 1];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-        mesh
+        vec![MeshBundle {
+            mesh: meshes.add(mesh),
+            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            draw: Default::default(),
+            visible: Default::default(),
+            main_pass: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+        }]
     }
 }
 
-impl AsEntity for CuboidSpace {}
-
-impl From<CuboidSpace> for Mesh {
-    fn from(s: CuboidSpace) -> Mesh {
+impl AsEntity for CuboidSpace {
+    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let vertex_positions = vec![
             [0.0, 0.0, 0.0],
-            [s.size.x, 0.0, 0.0],
-            [s.size.x, s.size.y, 0.0],
-            [0.0, s.size.y, 0.0],
-            [0.0, 0.0, s.size.z],
-            [s.size.x, 0.0, s.size.z],
-            [s.size.x, s.size.y, s.size.z],
-            [0.0, s.size.y, s.size.z],
+            [self.size.x, 0.0, 0.0],
+            [self.size.x, self.size.y, 0.0],
+            [0.0, self.size.y, 0.0],
+            [0.0, 0.0, self.size.z],
+            [self.size.x, 0.0, self.size.z],
+            [self.size.x, self.size.y, self.size.z],
+            [0.0, self.size.y, self.size.z],
         ];
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertex_positions);
         let indices = Indices::U32(vec![
@@ -80,16 +103,22 @@ impl From<CuboidSpace> for Mesh {
         mesh.set_indices(Some(indices));
         let vertex_colors = vec![[1.0, 1.0, 0.0, 0.1]; 8];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
-        mesh
+        vec![MeshBundle {
+            mesh: meshes.add(mesh),
+            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            draw: Default::default(),
+            visible: Default::default(),
+            main_pass: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+        }]
     }
 }
 
-impl AsEntity for CircleSpace {}
-
-impl From<SphereSpace> for Mesh {
-    fn from(s: SphereSpace) -> Mesh {
+impl AsEntity for SphereSpace {
+    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh: Mesh = shape::Icosphere {
-            radius: s.radius,
+            radius: self.radius,
             subdivisions: 10,
         }
         .into();
@@ -97,24 +126,30 @@ impl From<SphereSpace> for Mesh {
             Mesh::ATTRIBUTE_COLOR,
             vec![[1.0, 1.0, 0.0, 0.1]; mesh.count_vertices()],
         );
-        mesh
+        vec![MeshBundle {
+            mesh: meshes.add(mesh),
+            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            draw: Default::default(),
+            visible: Default::default(),
+            main_pass: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+        }]
     }
 }
-
-impl AsEntity for SphereSpace {}
 
 use crate::plan::graph::*;
 use crate::plan::{State, StateSpace};
 
-impl<S: StateSpace> From<Graph<S>> for Mesh {
-    fn from(graph: Graph<S>) -> Mesh {
+impl<S: StateSpace> AsEntity for Graph<S> {
+    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
-        let positions: Vec<[f32; 3]> = graph
+        let positions: Vec<[f32; 3]> = self
             .vertices
             .iter()
             .map(|Vertex { state, .. }| state.project_to_3d())
             .collect();
-        let indices: Vec<u32> = graph
+        let indices: Vec<u32> = self
             .vertices
             .iter()
             .enumerate()
@@ -138,18 +173,26 @@ impl<S: StateSpace> From<Graph<S>> for Mesh {
         let indices = Indices::U32(indices);
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         mesh.set_indices(Some(indices));
-        let colors = vec![[1.0, 1.0, 1.0, 0.1]; graph.vertices.len()];
+        let colors = vec![[1.0, 1.0, 1.0, 0.1]; self.vertices.len()];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-        mesh
+        vec![MeshBundle {
+            mesh: meshes.add(mesh),
+            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            draw: Default::default(),
+            visible: Default::default(),
+            main_pass: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+        }]
     }
 }
 
 use crate::plan::graph::search::spanning::*;
 
-impl<'a, SS: StateSpace, F: Propagation<SS>> From<TreeSearch<'a, SS, F>> for Mesh {
-    fn from(search: TreeSearch<'a, SS, F>) -> Mesh {
-        let mut mesh = Mesh::new(PrimitiveTopology::LineList);
-        let flattened_tree: Vec<usize> = search
+impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
+    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+        let mut search_mesh = Mesh::new(PrimitiveTopology::LineList);
+        let flattened_tree: Vec<usize> = self
             .parent_map
             .iter()
             .map(|(&child_idx, &parent_idx)| vec![child_idx, parent_idx.unwrap_or(child_idx)])
@@ -157,7 +200,7 @@ impl<'a, SS: StateSpace, F: Propagation<SS>> From<TreeSearch<'a, SS, F>> for Mes
             .collect();
         let positions: Vec<[f32; 3]> = flattened_tree
             .iter()
-            .map(|idx| search.graph.vertices[*idx].state.project_to_3d())
+            .map(|idx| self.graph.vertices[*idx].state.project_to_3d())
             .collect();
         let indices: Vec<u32> = positions
             .iter()
@@ -165,23 +208,77 @@ impl<'a, SS: StateSpace, F: Propagation<SS>> From<TreeSearch<'a, SS, F>> for Mes
             .map(|(i, _)| i as u32)
             .collect();
         let indices = Indices::U32(indices);
-        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
-        mesh.set_indices(Some(indices));
+        search_mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        search_mesh.set_indices(Some(indices));
         let vertex_colors: Vec<[f32; 4]> = flattened_tree
             .iter()
             .map(|idx| {
-                if *idx == search.start_idx() {
+                if *idx == self.start_idx() {
                     [1.0, 1.0, 0.0, 1.0]
-                } else if *idx == search.stop_idx() {
+                } else if *idx == self.stop_idx() {
                     [0.0, 1.0, 0.0, 1.0]
-                } else if search.fringe.contains(idx) {
+                } else if self.fringe.contains(idx) {
                     [0.0, 1.0, 1.0, 1.0]
                 } else {
                     [1.0, 0.0, 1.0, 0.2]
                 }
             })
             .collect();
-        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
-        mesh
+        search_mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
+        vec![
+            MeshBundle {
+                mesh: meshes.add(search_mesh),
+                render_pipelines: RenderPipelines::from_handles(&[
+                    plugin::NON_FILL_PIPELINE.typed()
+                ]),
+                draw: Default::default(),
+                visible: Default::default(),
+                main_pass: Default::default(),
+                transform: Default::default(),
+                global_transform: Default::default(),
+            },
+            MeshBundle {
+                mesh: meshes.add({
+                    let mut mesh: Mesh = shape::Box::new(0.1, 0.1, 0.1).into();
+                    mesh.set_attribute(
+                        Mesh::ATTRIBUTE_COLOR,
+                        vec![[0.0, 1.0, 0.0, 1.0]; mesh.count_vertices()],
+                    );
+                    mesh
+                }),
+                render_pipelines: RenderPipelines::from_handles(&[plugin::FILL_PIPELINE.typed()]),
+                draw: Default::default(),
+                visible: Default::default(),
+                main_pass: Default::default(),
+                transform: Transform::from_translation(
+                    self.graph.vertices[self.start_idx()]
+                        .state
+                        .project_to_3d()
+                        .into(),
+                ),
+                global_transform: Default::default(),
+            },
+            MeshBundle {
+                mesh: meshes.add({
+                    let mut mesh: Mesh = shape::Box::new(0.1, 0.1, 0.1).into();
+                    mesh.set_attribute(
+                        Mesh::ATTRIBUTE_COLOR,
+                        vec![[1.0, 0.0, 0.0, 1.0]; mesh.count_vertices()],
+                    );
+                    mesh
+                }),
+                render_pipelines: RenderPipelines::from_handles(&[plugin::FILL_PIPELINE.typed()]),
+                draw: Default::default(),
+                visible: Default::default(),
+                main_pass: Default::default(),
+                transform: Transform::from_translation(
+                    self.graph.vertices[self.stop_idx()]
+                        .state
+                        .project_to_3d()
+                        .into(),
+                ),
+                global_transform: Default::default(),
+            },
+        ]
     }
 }
