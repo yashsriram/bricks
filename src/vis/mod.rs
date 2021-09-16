@@ -7,10 +7,10 @@ use bevy::render::mesh::{Indices, Mesh};
 use bevy::render::pipeline::PrimitiveTopology;
 
 pub trait AsEntity: Sized {
-    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle>;
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle>;
 
     fn spawn(
-        self,
+        &self,
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
         transform: Transform,
@@ -33,7 +33,7 @@ pub trait AsEntity: Sized {
 use crate::plan::spaces::*;
 
 impl AsEntity for RectangleSpace {
-    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
         let positions = vec![
             [0.0, 0.0, 0.0],
@@ -59,7 +59,7 @@ impl AsEntity for RectangleSpace {
 }
 
 impl AsEntity for CircleSpace {
-    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
         let num_partitions: usize = 18;
         let positions: Vec<[f32; 3]> = (0..=num_partitions)
@@ -84,7 +84,7 @@ impl AsEntity for CircleSpace {
 }
 
 impl AsEntity for CuboidSpace {
-    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let vertex_positions = vec![
             [0.0, 0.0, 0.0],
@@ -116,7 +116,7 @@ impl AsEntity for CuboidSpace {
 }
 
 impl AsEntity for SphereSpace {
-    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh: Mesh = shape::Icosphere {
             radius: self.radius,
             subdivisions: 10,
@@ -142,7 +142,7 @@ use crate::plan::graph::*;
 use crate::plan::{State, StateSpace};
 
 impl<S: StateSpace> AsEntity for Graph<S> {
-    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let positions: Vec<[f32; 3]> = self
             .vertices
@@ -190,7 +190,7 @@ impl<S: StateSpace> AsEntity for Graph<S> {
 use crate::plan::graph::search::spanning::*;
 
 impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
-    fn into_mesh_bundles(self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut search_mesh = Mesh::new(PrimitiveTopology::LineList);
         let flattened_tree: Vec<usize> = self
             .parent_map
@@ -202,6 +202,11 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
             .iter()
             .map(|idx| self.graph.vertices[*idx].state.project_to_3d())
             .collect();
+        let mean_edge_len = positions
+            .chunks_exact(2)
+            .map(|chunk| (Vec3::from(chunk[0]) - Vec3::from(chunk[1])).length())
+            .sum::<f32>()
+            / (positions.len() as f32 / 2.0);
         let indices: Vec<u32> = positions
             .iter()
             .enumerate()
@@ -239,7 +244,8 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
             },
             MeshBundle {
                 mesh: meshes.add({
-                    let mut mesh: Mesh = shape::Box::new(0.1, 0.1, 0.1).into();
+                    let mut mesh: Mesh =
+                        shape::Box::new(mean_edge_len, mean_edge_len, mean_edge_len).into();
                     mesh.set_attribute(
                         Mesh::ATTRIBUTE_COLOR,
                         vec![[0.0, 1.0, 0.0, 1.0]; mesh.count_vertices()],
@@ -260,7 +266,8 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
             },
             MeshBundle {
                 mesh: meshes.add({
-                    let mut mesh: Mesh = shape::Box::new(0.1, 0.1, 0.1).into();
+                    let mut mesh: Mesh =
+                        shape::Box::new(mean_edge_len, mean_edge_len, mean_edge_len).into();
                     mesh.set_attribute(
                         Mesh::ATTRIBUTE_COLOR,
                         vec![[1.0, 0.0, 0.0, 1.0]; mesh.count_vertices()],
