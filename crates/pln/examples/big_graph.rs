@@ -1,6 +1,6 @@
 use pln::graph::prm::PRM;
-use pln::graph::search::spanning::propagations::*;
-use pln::graph::search::spanning::TreeSearch;
+use pln::graph::search::spanning::tree_likes::*;
+use pln::graph::search::spanning::CostGuidedTreeSearch;
 use pln::na::{Point2, Vector2};
 use pln::spaces::*;
 use std::time::Instant;
@@ -25,11 +25,12 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     println!("Number of edges = ~{:?}", prm.graph.num_edges());
     let [a, b] = prm.add([Point2::new(0.3, 0.7), Point2::new(19.5, 17.3)], 0.9);
     let searches = [
-        TreeSearch::try_search::<DFSLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<BFSLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<UCSLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<AStarLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<W2AStarLike>(&prm.graph, a, b),
+        DFSLike::try_on(&prm.graph, a, b),
+        BFSLike::try_on(&prm.graph, a, b),
+        UCSLike::try_on(&prm.graph, a, b),
+        AStarLike::try_on(&prm.graph, a, b),
+        WeightedAStarLike::<11, 10>::try_on(&prm.graph, a, b),
+        W2AStarLike::try_on(&prm.graph, a, b),
     ];
     prm.state_space
         .spawn(&mut commands, &mut meshes, Transform::default());
