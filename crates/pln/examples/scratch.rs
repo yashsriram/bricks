@@ -1,12 +1,12 @@
-use bevy::prelude::*;
-use bevy::render::mesh::VertexAttributeValues;
-use bricks::na::{Point2, Point3, Vector2, Vector3};
-use bricks::plan::graph::prm::PRM;
-use bricks::plan::graph::search::spanning::propagations::*;
-use bricks::plan::graph::search::spanning::TreeSearch;
-use bricks::plan::spaces::*;
-use bricks::vis::AsEntity;
-use bricks::*;
+use pln::graph::prm::PRM;
+use pln::graph::search::spanning::propagations::*;
+use pln::graph::search::spanning::TreeSearch;
+use pln::na::{Point2, Point3, Vector2, Vector3};
+use pln::spaces::*;
+use vz::bevy::prelude::*;
+use vz::bevy::render::mesh::VertexAttributeValues;
+use vz::plugins::BasePlugins;
+use vz::AsEntity;
 
 fn main() {
     App::build()

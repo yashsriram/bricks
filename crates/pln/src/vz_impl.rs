@@ -1,36 +1,9 @@
-mod plugin;
-
-pub use plugin::*;
-
-use bevy::prelude::*;
-use bevy::render::mesh::{Indices, Mesh};
-use bevy::render::pipeline::PrimitiveTopology;
-
-pub trait AsEntity: Sized {
-    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle>;
-
-    fn spawn(
-        &self,
-        commands: &mut Commands,
-        meshes: &mut ResMut<Assets<Mesh>>,
-        transform: Transform,
-    ) -> Entity {
-        commands
-            .spawn_bundle(MeshBundle {
-                transform: transform,
-                ..Default::default()
-            })
-            .with_children(|parent| {
-                let child_bundle_list: Vec<MeshBundle> = self.into_mesh_bundles(meshes);
-                for child_bundle in child_bundle_list.into_iter() {
-                    parent.spawn_bundle(child_bundle);
-                }
-            })
-            .id()
-    }
-}
-
-use crate::plan::spaces::*;
+use crate::spaces::*;
+use vz::bevy::prelude::*;
+use vz::bevy::render::mesh::{Indices, Mesh};
+use vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
+use vz::plugins::{FILL_PIPELINE, NON_FILL_PIPELINE};
+use vz::AsEntity;
 
 impl AsEntity for RectangleSpace {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
@@ -48,7 +21,7 @@ impl AsEntity for RectangleSpace {
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
         vec![MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
             draw: Default::default(),
             visible: Default::default(),
             main_pass: Default::default(),
@@ -73,7 +46,7 @@ impl AsEntity for CircleSpace {
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
         vec![MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
             draw: Default::default(),
             visible: Default::default(),
             main_pass: Default::default(),
@@ -105,7 +78,7 @@ impl AsEntity for CuboidSpace {
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
         vec![MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
             draw: Default::default(),
             visible: Default::default(),
             main_pass: Default::default(),
@@ -128,7 +101,7 @@ impl AsEntity for SphereSpace {
         );
         vec![MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
             draw: Default::default(),
             visible: Default::default(),
             main_pass: Default::default(),
@@ -138,8 +111,8 @@ impl AsEntity for SphereSpace {
     }
 }
 
-use crate::plan::graph::*;
-use crate::plan::{State, StateSpace};
+use crate::graph::*;
+use crate::{State, StateSpace};
 
 impl<S: StateSpace> AsEntity for Graph<S> {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
@@ -177,7 +150,7 @@ impl<S: StateSpace> AsEntity for Graph<S> {
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
         vec![MeshBundle {
             mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[plugin::NON_FILL_PIPELINE.typed()]),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
             draw: Default::default(),
             visible: Default::default(),
             main_pass: Default::default(),
@@ -187,7 +160,7 @@ impl<S: StateSpace> AsEntity for Graph<S> {
     }
 }
 
-use crate::plan::graph::search::spanning::*;
+use crate::graph::search::spanning::*;
 
 impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
@@ -202,11 +175,12 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
             .iter()
             .map(|idx| self.graph.vertices[*idx].state.project_to_3d())
             .collect();
-        let mean_edge_len = positions
+        let box_size = positions
             .chunks_exact(2)
             .map(|chunk| (Vec3::from(chunk[0]) - Vec3::from(chunk[1])).length())
             .sum::<f32>()
-            / (positions.len() as f32 / 2.0);
+            / (positions.len() as f32 / 2.0)
+            / 2.0;
         let indices: Vec<u32> = positions
             .iter()
             .enumerate()
@@ -233,9 +207,7 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
         vec![
             MeshBundle {
                 mesh: meshes.add(search_mesh),
-                render_pipelines: RenderPipelines::from_handles(&[
-                    plugin::NON_FILL_PIPELINE.typed()
-                ]),
+                render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
                 draw: Default::default(),
                 visible: Default::default(),
                 main_pass: Default::default(),
@@ -244,15 +216,14 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
             },
             MeshBundle {
                 mesh: meshes.add({
-                    let mut mesh: Mesh =
-                        shape::Box::new(mean_edge_len, mean_edge_len, mean_edge_len).into();
+                    let mut mesh: Mesh = shape::Box::new(box_size, box_size, box_size).into();
                     mesh.set_attribute(
                         Mesh::ATTRIBUTE_COLOR,
                         vec![[0.0, 1.0, 0.0, 1.0]; mesh.count_vertices()],
                     );
                     mesh
                 }),
-                render_pipelines: RenderPipelines::from_handles(&[plugin::FILL_PIPELINE.typed()]),
+                render_pipelines: RenderPipelines::from_handles(&[FILL_PIPELINE.typed()]),
                 draw: Default::default(),
                 visible: Default::default(),
                 main_pass: Default::default(),
@@ -266,15 +237,14 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
             },
             MeshBundle {
                 mesh: meshes.add({
-                    let mut mesh: Mesh =
-                        shape::Box::new(mean_edge_len, mean_edge_len, mean_edge_len).into();
+                    let mut mesh: Mesh = shape::Box::new(box_size, box_size, box_size).into();
                     mesh.set_attribute(
                         Mesh::ATTRIBUTE_COLOR,
                         vec![[1.0, 0.0, 0.0, 1.0]; mesh.count_vertices()],
                     );
                     mesh
                 }),
-                render_pipelines: RenderPipelines::from_handles(&[plugin::FILL_PIPELINE.typed()]),
+                render_pipelines: RenderPipelines::from_handles(&[FILL_PIPELINE.typed()]),
                 draw: Default::default(),
                 visible: Default::default(),
                 main_pass: Default::default(),

@@ -1,5 +1,5 @@
 use super::{Graph, Vertex};
-use crate::plan::{State, StateSpace};
+use crate::{State, StateSpace};
 use std::collections::HashSet;
 
 pub struct PRM<S: StateSpace> {
@@ -22,7 +22,7 @@ impl<S: StateSpace> PRM<S> {
             }
         }
         Self {
-            state_space: state_space,
+            state_space,
             graph: Graph {
                 vertices: states
                     .into_iter()
@@ -37,7 +37,7 @@ impl<S: StateSpace> PRM<S> {
         let prev_graph_size = self.graph.vertices.len();
         for state in IntoIterator::into_iter(states) {
             self.graph.vertices.push(Vertex {
-                state: state,
+                state,
                 adjacencies: HashSet::new(),
             });
         }

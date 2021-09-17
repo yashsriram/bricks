@@ -1,6 +1,6 @@
 pub mod spanning {
     use super::super::Graph;
-    use crate::plan::StateSpace;
+    use crate::StateSpace;
     use ordered_float::OrderedFloat;
     use std::cmp::Ordering;
     use std::cmp::Reverse;
@@ -25,7 +25,7 @@ pub mod spanning {
 
     pub mod propagations {
         use super::Propagation;
-        use crate::plan::{State, StateSpace};
+        use crate::{State, StateSpace};
         use ordered_float::OrderedFloat;
 
         #[derive(Debug)]
@@ -273,10 +273,10 @@ pub mod spanning {
                 }
             }
             TreeSearch {
-                graph: graph,
-                start_idx: start_idx,
-                stop_idx: stop_idx,
-                parent_map: parent_map,
+                graph,
+                start_idx,
+                stop_idx,
+                parent_map,
                 fringe: fringe
                     .into_sorted_vec()
                     .into_iter()

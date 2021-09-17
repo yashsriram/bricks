@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use bricks::*;
+use vz::bevy::prelude::*;
+use vz::plugins::*;
 
 fn main() {
     App::build()
@@ -28,14 +28,14 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         ],
     );
     let mesh = meshes.add(mesh);
-    use bevy::render::pipeline::RenderPipeline;
+    use vz::bevy::render::pipeline::RenderPipeline;
     // 10_000 should give ~30FPS
     for _ in 0..10_000 {
         commands
             .spawn_bundle(MeshBundle {
                 mesh: mesh.clone(),
                 render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                    vis::NON_FILL_PIPELINE.typed(),
+                    NON_FILL_PIPELINE.typed(),
                 )]),
                 visible: Visible {
                     is_visible: true,
