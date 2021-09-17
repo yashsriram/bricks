@@ -1,6 +1,6 @@
 use pln::graph::prm::PRM;
-use pln::graph::search::spanning::propagations::*;
-use pln::graph::search::spanning::TreeSearch;
+use pln::graph::search::spanning::tree_likes::*;
+use pln::graph::search::spanning::CostGuidedTreeSearch;
 use pln::na::{Point2, Point3, Vector2, Vector3};
 use pln::spaces::*;
 use vz::bevy::prelude::*;
@@ -22,13 +22,13 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     };
     let mut prm = PRM::with_num_samples(space, 1500, 0.2);
     let [a, b] = prm.add([Point2::new(0.3, 0.7), Point2::new(6.5, 1.3)], 0.3);
-    use ordered_float::OrderedFloat;
     let searches = [
-        TreeSearch::try_with::<OrderedFloat<f32>, DFSLike>(&prm.graph, a, b),
-        TreeSearch::try_with::<OrderedFloat<f32>, BFSLike>(&prm.graph, a, b),
-        TreeSearch::try_with::<OrderedFloat<f32>, UCSLike>(&prm.graph, a, b),
-        TreeSearch::try_with::<OrderedFloat<f32>, AStarLike>(&prm.graph, a, b),
-        TreeSearch::try_with::<OrderedFloat<f32>, W2AStarLike<2, 2>>(&prm.graph, a, b),
+        DFSLike::try_on(&prm.graph, a, b),
+        BFSLike::try_on(&prm.graph, a, b),
+        UCSLike::try_on(&prm.graph, a, b),
+        AStarLike::try_on(&prm.graph, a, b),
+        WeightedAStarLike::<11, 10>::try_on(&prm.graph, a, b),
+        W2AStarLike::try_on(&prm.graph, a, b),
     ];
     prm.state_space
         .spawn(&mut commands, &mut meshes, Transform::default());
