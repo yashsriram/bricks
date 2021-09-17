@@ -22,12 +22,13 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     };
     let mut prm = PRM::with_num_samples(space, 1500, 0.2);
     let [a, b] = prm.add([Point2::new(0.3, 0.7), Point2::new(6.5, 1.3)], 0.3);
+    use ordered_float::OrderedFloat;
     let searches = [
-        TreeSearch::try_search::<DFSLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<BFSLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<UCSLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<AStarLike>(&prm.graph, a, b),
-        TreeSearch::try_search::<W2AStarLike>(&prm.graph, a, b),
+        TreeSearch::try_with::<OrderedFloat<f32>, DFSLike>(&prm.graph, a, b),
+        TreeSearch::try_with::<OrderedFloat<f32>, BFSLike>(&prm.graph, a, b),
+        TreeSearch::try_with::<OrderedFloat<f32>, UCSLike>(&prm.graph, a, b),
+        TreeSearch::try_with::<OrderedFloat<f32>, AStarLike>(&prm.graph, a, b),
+        TreeSearch::try_with::<OrderedFloat<f32>, W2AStarLike<2, 2>>(&prm.graph, a, b),
     ];
     prm.state_space
         .spawn(&mut commands, &mut meshes, Transform::default());
