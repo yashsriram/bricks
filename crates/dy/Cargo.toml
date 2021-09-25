@@ -1,0 +1,8 @@
+[package]
+name = "dy"
+version = "0.1.0"
+edition = "2018"
+authors = ["Yashasvi Sriram <yash.3997@gmail.com>"]
+
+[dependencies]
+vz = { path = "../vz" }

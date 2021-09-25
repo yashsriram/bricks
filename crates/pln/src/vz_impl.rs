@@ -114,7 +114,7 @@ impl AsEntity for SphereSpace {
 use crate::graph::*;
 use crate::{State, StateSpace};
 
-impl<S: StateSpace> AsEntity for Graph<S> {
+impl<SS: StateSpace> AsEntity for Graph<SS> {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let positions: Vec<[f32; 3]> = self
