@@ -1,6 +1,7 @@
 use super::StateSpace;
 use std::collections::HashSet;
 
+pub mod path;
 pub mod prm;
 pub mod search;
 

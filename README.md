@@ -24,6 +24,7 @@
     - [ ] Test on datasets
         - Moving AI lab
         - Open Street maps
+        - https://github.com/je-suis-tm/graph-theory
 - `Vis`
     - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
     - [x] 3D Perspective FPS camera
@@ -33,14 +34,14 @@
 - `TreeSearch` on `Graph`
     - [x] start, stop, goal, max idxs
     - [x] handle stop not reached -> reachable subgraph explored
-    - [x] TreeSearch = Open least cost on fringe + Propagate to unexplored adjacencies and add them to fringe
-    - [x] Propagate trait = search state + cost priority
-    - [x] CostPriority = Ord on cost + open min cost first + NaN cost is INF + NAN cost = NAN cost
+    - [x] Tree Search = Open least cost on fringe + Propagate to unexplored adjacencies and add them to fringe
+    - [x] Propagate trait = search state + cost priority + common search fn
+    - [x] CostPriorityWithIndex = Ord on cost + open min cost first
+        - Default impl use : NaN cost is INF + NAN cost = NAN cost
     - [x] Searching for a stop = may finds path to stop + may some other vertices => so same search can be used to find paths to multiple vertices
     - [x] Multiple searches on a graph = State per search = No resetting of state
     - [x] Parallelizable searches
-    - [x] Large graph - small area search is inexpensive - uses sparse seach state using hashmaps
-    - [x] Control initial alloc size of tree and fringe
+    - [x] Large graph - small area search is inexpensive - uses sparse seach state using hashmaps (Control initial alloc size of tree and fringe)
     - [x] Get path to a goal, get path to stop, store start, stop, max idxs
     - [x] Remove Clone trait bound on vertex search state by merging Propagate and CostPriority => Get reference of underlying graph
 - `PRM` on `StateSpace`
@@ -83,6 +84,7 @@ graphics-viz, rust libs create/contribute.
     - RRT^\*
     - function approximator based policy (optimization, ML, DL, RL, ...)
     - Reflecting ripple search
+    - Voronoi
 - Motion planning, conf space obstacles
 - Discriminators
     1. Global opt vs Local opt

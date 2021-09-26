@@ -259,3 +259,26 @@ impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
         ]
     }
 }
+
+use crate::graph::path::*;
+
+impl<SS: StateSpace> AsEntity for Path<SS> {
+    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+        let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
+        let positions: Vec<[f32; 3]> = self.vertices.iter().map(|v| v.project_to_3d()).collect();
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        let indices = Indices::U32((0..self.vertices.len() as u32).collect());
+        mesh.set_indices(Some(indices));
+        let colors = vec![[0.0, 1.0, 0.0, 1.0]; self.vertices.len()];
+        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
+        vec![MeshBundle {
+            mesh: meshes.add(mesh),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+            draw: Default::default(),
+            visible: Default::default(),
+            main_pass: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+        }]
+    }
+}

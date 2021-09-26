@@ -5,7 +5,7 @@ pub use nalgebra as na;
 
 use std::fmt::Debug;
 
-pub trait State: Debug {
+pub trait State: Debug + Copy {
     fn dist(&self, other: &Self) -> f32;
 
     fn project_to_3d(&self) -> [f32; 3];
