@@ -160,9 +160,9 @@ impl<SS: StateSpace> AsEntity for Graph<SS> {
     }
 }
 
-use crate::graph::search::spanning::*;
+use crate::graph::search::SpanningTreeView;
 
-impl<'a, SS: StateSpace> AsEntity for TreeSearch<'a, SS> {
+impl<'a, SS: StateSpace> AsEntity for SpanningTreeView<'a, SS> {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
         let mut search_mesh = Mesh::new(PrimitiveTopology::LineList);
         let flattened_tree: Vec<usize> = self

@@ -1,6 +1,7 @@
+use pln::graph::path::Path;
 use pln::graph::prm::PRM;
-use pln::graph::search::spanning::tree_likes::*;
-use pln::graph::search::spanning::CostGuidedTreeSearch;
+use pln::graph::search::spanning_trees::*;
+use pln::graph::search::CostGuidedSpanningTreeSearch;
 use pln::na::{Point2, Vector2};
 use pln::spaces::*;
 use std::time::Instant;
@@ -35,6 +36,11 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     prm.state_space
         .spawn(&mut commands, &mut meshes, Transform::default());
     for (i, search) in IntoIterator::into_iter(searches).enumerate() {
+        Path::from(&search).spawn(
+            &mut commands,
+            &mut meshes,
+            Transform::from_xyz(0.0, (i + 1) as f32 * 22.0, 0.0),
+        );
         search.spawn(
             &mut commands,
             &mut meshes,

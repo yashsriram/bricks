@@ -1,7 +1,7 @@
 use pln::graph::path::Path;
 use pln::graph::prm::PRM;
-use pln::graph::search::spanning::tree_likes::*;
-use pln::graph::search::spanning::CostGuidedTreeSearch;
+use pln::graph::search::spanning_trees::*;
+use pln::graph::search::CostGuidedSpanningTreeSearch;
 use pln::na::{Point2, Point3, Vector2, Vector3};
 use pln::spaces::*;
 use pln::StateSpace;

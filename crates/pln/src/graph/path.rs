@@ -1,4 +1,4 @@
-use crate::graph::search::spanning::TreeSearch;
+use crate::graph::search::SpanningTreeView;
 use crate::StateSpace;
 
 #[derive(Debug)]
@@ -12,8 +12,8 @@ impl<S: StateSpace> Path<S> {
     }
 }
 
-impl<'a, SS: StateSpace> From<&TreeSearch<'a, SS>> for Path<SS> {
-    fn from(ts: &TreeSearch<'a, SS>) -> Path<SS> {
+impl<'a, SS: StateSpace> From<&SpanningTreeView<'a, SS>> for Path<SS> {
+    fn from(ts: &SpanningTreeView<'a, SS>) -> Path<SS> {
         let vertices = match ts.path_to_stop() {
             None => vec![],
             Some(path) => path
