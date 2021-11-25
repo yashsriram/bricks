@@ -1,60 +1,84 @@
-use std::fmt::Debug;
-
 use std::ops::AddAssign;
+use std::ops::Mul;
 
-trait State: Debug + Add<Output = Self> + AddAssign + Sized {}
+trait Dynamics: AddAssign<Self::Delta> {
+    type Control;
+    type Derivative: Mul<Self::TimeInterval, Output = Self::Delta>;
+    type TimeInterval;
+    type Delta;
 
-#[derive(Debug)]
-struct DDState {
-    x: f64,
-    y: f64,
-    theta: f64,
+    fn der_given_ctrl(&self, c: Self::Control) -> Self::Derivative;
+
+    fn eular_update(&mut self, c: Self::Control, dt: Self::TimeInterval) {
+        *self += self.der_given_ctrl(c) * dt;
+    }
 }
 
-// impl State<3> for DDState {
-//     fn as_arr(&self) -> [f64; 3] {
-//         [self.x, self.y, self.theta]
-//     }
-// }
+#[derive(Debug, Copy, Clone)]
+struct RobotState {
+    a: f64,
+    b: f64,
+}
 
-// trait Control: Debug {}
+#[derive(Debug, Copy, Clone)]
+struct RobotDerivative {
+    a: f64,
+    b: f64,
+}
 
-// #[derive(Debug)]
-// struct DDControl {
-//     v: f64,
-//     w: f64,
-// }
+#[derive(Debug, Copy, Clone)]
+struct RobotDelta {
+    a: f64,
+    b: f64,
+}
 
-// impl Control for DDControl {}
+type RobotTimeInterval = f64;
 
-// trait EularianDynamics<const N: usize>
-// where
-//     Self: State<N> + Sized,
-// {
-//     fn tick(state: &self, der: Self, dt: f64) {
-//         for (a, b) in state.as_arr().iter_mut().zip(der.as_arr().iter()) {
-//             *a += b * dt;
-//         }
-//     }
-// }
+impl Mul<RobotTimeInterval> for RobotDerivative {
+    type Output = RobotDelta;
 
-// impl EularianDynamics<3> for DDState {}
+    fn mul(self, dt: RobotTimeInterval) -> RobotDelta {
+        RobotDelta {
+            a: self.a * dt,
+            b: self.b * dt,
+        }
+    }
+}
+
+impl AddAssign<RobotDelta> for RobotState {
+    fn add_assign(&mut self, other: RobotDelta) {
+        *self = Self {
+            a: self.a + other.a,
+            b: self.b + other.b,
+        };
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+struct RobotControl(f64);
+
+impl Dynamics for RobotState {
+    type Control = RobotControl;
+    type Derivative = RobotDerivative;
+    type TimeInterval = RobotTimeInterval;
+    type Delta = RobotDelta;
+
+    fn der_given_ctrl(&self, c: RobotControl) -> RobotDerivative {
+        RobotDerivative {
+            a: c.0.cos(),
+            b: -c.0.sin(),
+        }
+    }
+}
 
 fn main() {
-    // let mut state = DDState {
-    //     x: 1.0,
-    //     y: 2.0,
-    //     theta: 0.1,
-    // };
-    // let control = DDControl { v: -1.0, w: -2.0 };
-    // let der = DDState {
-    //     x: control.v * state.theta.cos(),
-    //     y: control.v * state.theta.sin(),
-    //     theta: control.w,
-    // };
-    // println!("{:?}", state);
-    // state.tick(&mut state, &control, 0.1);
-    // println!("{:?}", state);
-    // state.tick(&mut state, &control, 0.1);
-    // println!("{:?}", state);
+    let mut s = RobotState { a: 0.0, b: 0.0 };
+    let c = RobotControl(3.0);
+
+    println!("{:?}", s);
+
+    let dt = 0.1;
+    s.eular_update(c, dt);
+
+    println!("{:?}", s);
 }
