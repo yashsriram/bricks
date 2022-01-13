@@ -1,3 +1,4 @@
+use nalgebra::SVector;
 use std::ops::AddAssign;
 use std::ops::Mul;
 
