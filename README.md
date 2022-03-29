@@ -1,8 +1,8 @@
 ### sanity check
-- [ ] Small, simple, clear, useful, usable, independent, composable problems. No big problem. Big problem -> Compose(smaller problems).
-- [ ] Decently thought about and provable (guarantees (correctness, time, space usage, ...), bounds, ...) solutions.
-- [ ] Starting should consist mostly of what I already know, don't wait too much (it will be endless process otherwise).
-    - The notion of independent starts, saaga deyyali ante entayna saaga deyyochu 0-1 lopala, but you want to get to 1, you are already at 1.
+- [ ] Small, simple, clear, independent problems rather than a big problem. Increment problem as we go.
+- [ ] Useful, usable, rigourously understood solutions (proofs, guarantees (correctness, time, space usage, ...), bounds, ...).
+- [ ] Make a running system and iterate.
+- [ ] Reusable, composable.
 - [ ] Scalable (give bounds), Parallelize (when possible).
 - [ ] Visualizable.
 - [ ] Testable, get lots of good testcases.
@@ -10,6 +10,7 @@
 - [ ] Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
 - [ ] Teachable to others, learnable by others.
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).
+
 
 ### roadmap
 
