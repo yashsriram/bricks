@@ -1,5 +1,5 @@
-use crate::graph::search::SpanningTreeView;
-use crate::StateSpace;
+use super::search::SpanningTreeView;
+use super::StateSpace;
 
 #[derive(Debug)]
 pub struct Path<SS: StateSpace> {

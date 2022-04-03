@@ -1,9 +1,9 @@
 use bevy::render::mesh::Indices;
 use bevy::render::pipeline::PrimitiveTopology;
-use vz::bevy::prelude::*;
-use vz::bevy::render::mesh::VertexAttributeValues;
-use vz::bevy::render::pipeline::RenderPipeline;
-use vz::plugins::*;
+use bricks::vz::bevy::prelude::*;
+use bricks::vz::bevy::render::mesh::VertexAttributeValues;
+use bricks::vz::bevy::render::pipeline::RenderPipeline;
+use bricks::vz::plugins::*;
 
 fn main() {
     App::build()

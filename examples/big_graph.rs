@@ -1,13 +1,13 @@
-use pln::graph::path::Path;
-use pln::graph::prm::PRM;
-use pln::graph::search::spanning_trees::*;
-use pln::graph::search::CostGuidedSpanningTreeSearch;
-use pln::na::{Point2, Vector2};
-use pln::spaces::*;
+use bricks::pl::graph::path::Path;
+use bricks::pl::graph::prm::PRM;
+use bricks::pl::graph::search::spanning_trees::*;
+use bricks::pl::graph::search::CostGuidedSpanningTreeSearch;
+use bricks::pl::na::{Point2, Vector2};
+use bricks::pl::spaces::*;
 use std::time::Instant;
-use vz::bevy::prelude::*;
-use vz::plugins::BasePlugins;
-use vz::AsEntity;
+use bricks::vz::bevy::prelude::*;
+use bricks::vz::plugins::BasePlugins;
+use bricks::vz::AsEntity;
 
 fn main() {
     App::build()

@@ -1,13 +1,13 @@
-use pln::graph::path::Path;
-use pln::graph::prm::PRM;
-use pln::graph::search::spanning_trees::*;
-use pln::graph::search::CostGuidedSpanningTreeSearch;
-use pln::na::{Point2, Point3, Vector2, Vector3};
-use pln::spaces::*;
-use pln::StateSpace;
-use vz::bevy::prelude::*;
-use vz::plugins::BasePlugins;
-use vz::AsEntity;
+use bricks::pl::graph::path::Path;
+use bricks::pl::graph::prm::PRM;
+use bricks::pl::graph::search::spanning_trees::*;
+use bricks::pl::graph::search::CostGuidedSpanningTreeSearch;
+use bricks::pl::na::{Point2, Point3, Vector2, Vector3};
+use bricks::pl::spaces::*;
+use bricks::pl::StateSpace;
+use bricks::vz::bevy::prelude::*;
+use bricks::vz::plugins::BasePlugins;
+use bricks::vz::AsEntity;
 
 fn main() {
     App::build()

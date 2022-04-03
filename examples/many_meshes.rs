@@ -1,5 +1,5 @@
-use vz::bevy::prelude::*;
-use vz::plugins::*;
+use bricks::vz::bevy::prelude::*;
+use bricks::vz::plugins::*;
 
 fn main() {
     App::build()
@@ -28,7 +28,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         ],
     );
     let mesh = meshes.add(mesh);
-    use vz::bevy::render::pipeline::RenderPipeline;
+    use bricks::vz::bevy::render::pipeline::RenderPipeline;
     // 10_000 should give ~30FPS
     for _ in 0..10_000 {
         commands

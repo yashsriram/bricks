@@ -1,9 +1,9 @@
-use crate::spaces::*;
-use vz::bevy::prelude::*;
-use vz::bevy::render::mesh::{Indices, Mesh};
-use vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
-use vz::plugins::{FILL_PIPELINE, NON_FILL_PIPELINE};
-use vz::AsEntity;
+use super::spaces::*;
+use crate::vz::bevy::prelude::*;
+use crate::vz::bevy::render::mesh::{Indices, Mesh};
+use crate::vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
+use crate::vz::plugins::{FILL_PIPELINE, NON_FILL_PIPELINE};
+use crate::vz::AsEntity;
 
 impl AsEntity for RectangleSpace {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
@@ -111,8 +111,8 @@ impl AsEntity for SphereSpace {
     }
 }
 
-use crate::graph::*;
-use crate::{State, StateSpace};
+use crate::pl::graph::*;
+use super::{State, StateSpace};
 
 impl<SS: StateSpace> AsEntity for Graph<SS> {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
@@ -160,7 +160,7 @@ impl<SS: StateSpace> AsEntity for Graph<SS> {
     }
 }
 
-use crate::graph::search::SpanningTreeView;
+use crate::pl::graph::search::SpanningTreeView;
 
 impl<'a, SS: StateSpace> AsEntity for SpanningTreeView<'a, SS> {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
@@ -260,7 +260,7 @@ impl<'a, SS: StateSpace> AsEntity for SpanningTreeView<'a, SS> {
     }
 }
 
-use crate::graph::path::*;
+use crate::pl::graph::path::*;
 
 impl<SS: StateSpace> AsEntity for Path<SS> {
     fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {

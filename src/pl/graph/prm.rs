@@ -1,5 +1,5 @@
 use super::{Graph, Vertex};
-use crate::{State, StateSpace};
+use super::super::{State, StateSpace};
 use std::collections::HashSet;
 
 pub struct PRM<S: StateSpace> {

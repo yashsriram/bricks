@@ -1,5 +1,5 @@
 use super::Graph;
-use crate::StateSpace;
+use super::super::StateSpace;
 use std::cmp::Ordering;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
@@ -159,7 +159,7 @@ pub trait CostGuidedSpanningTreeSearch<SS: StateSpace, Cost: Ord>: Debug + Sized
 
 pub mod spanning_trees {
     use super::CostGuidedSpanningTreeSearch;
-    use crate::{State, StateSpace};
+    use super::super::super::{State, StateSpace};
     use ordered_float::OrderedFloat;
 
     #[derive(Debug)]
