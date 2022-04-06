@@ -1,6 +1,5 @@
 pub mod graph;
 pub mod spaces;
-pub mod vz_impl;
 pub use nalgebra as na;
 
 use std::fmt::Debug;
