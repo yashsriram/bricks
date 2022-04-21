@@ -1,17 +1,15 @@
-use super::super::StateSpace;
-use super::Graph;
-use super::State;
-use crate::vz::bevy::prelude::*;
-use crate::vz::bevy::render::mesh::{Indices, Mesh};
-use crate::vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
-use crate::vz::plugins::{FILL_PIPELINE, NON_FILL_PIPELINE};
-use crate::vz::AsEntity;
-use std::cmp::Ordering;
-use std::cmp::Reverse;
-use std::collections::BinaryHeap;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::fmt::Debug;
+use crate::{
+    pl::{graph::Graph, State, StateSpace},
+    vz::bevy::render::{
+        mesh::{Indices, Mesh},
+        pipeline::PrimitiveTopology,
+    },
+};
+use std::{
+    cmp::{Ordering, Reverse},
+    collections::{BinaryHeap, HashMap, HashSet},
+    fmt::Debug,
+};
 
 struct CostOrdAndIndex<Cost: Ord> {
     idx: usize,
@@ -84,10 +82,10 @@ impl<'a, SS: StateSpace> SpanningTreeView<'a, SS> {
     }
 }
 
-impl<'a, SS: StateSpace> AsEntity for SpanningTreeView<'a, SS> {
-    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
-        let mut search_mesh = Mesh::new(PrimitiveTopology::LineList);
-        let flattened_tree: Vec<usize> = self
+impl<'a, SS: StateSpace> From<&SpanningTreeView<'a, SS>> for Mesh {
+    fn from(spanning_tree_view: &SpanningTreeView<'a, SS>) -> Self {
+        let mut mesh = Mesh::new(PrimitiveTopology::LineList);
+        let flattened_tree: Vec<usize> = spanning_tree_view
             .parent_map
             .iter()
             .map(|(&child_idx, &parent_idx)| vec![child_idx, parent_idx.unwrap_or(child_idx)])
@@ -95,90 +93,36 @@ impl<'a, SS: StateSpace> AsEntity for SpanningTreeView<'a, SS> {
             .collect();
         let positions: Vec<[f32; 3]> = flattened_tree
             .iter()
-            .map(|idx| self.graph.vertices[*idx].state.project_to_3d())
+            .map(|idx| {
+                spanning_tree_view.graph.vertices[*idx]
+                    .state
+                    .project_to_3d()
+            })
             .collect();
-        let box_size = positions
-            .chunks_exact(2)
-            .map(|chunk| (Vec3::from(chunk[0]) - Vec3::from(chunk[1])).length())
-            .sum::<f32>()
-            / (positions.len() as f32 / 2.0)
-            / 2.0;
         let indices: Vec<u32> = positions
             .iter()
             .enumerate()
             .map(|(i, _)| i as u32)
             .collect();
         let indices = Indices::U32(indices);
-        search_mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
-        search_mesh.set_indices(Some(indices));
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        mesh.set_indices(Some(indices));
         let vertex_colors: Vec<[f32; 4]> = flattened_tree
             .iter()
             .map(|idx| {
-                if *idx == self.start_idx() {
+                if *idx == spanning_tree_view.start_idx() {
                     [1.0, 1.0, 0.0, 1.0]
-                } else if *idx == self.stop_idx() {
+                } else if *idx == spanning_tree_view.stop_idx() {
                     [0.0, 1.0, 0.0, 1.0]
-                } else if self.fringe.contains(idx) {
+                } else if spanning_tree_view.fringe.contains(idx) {
                     [0.0, 1.0, 1.0, 1.0]
                 } else {
                     [1.0, 0.0, 1.0, 0.2]
                 }
             })
             .collect();
-        search_mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
-        vec![
-            MeshBundle {
-                mesh: meshes.add(search_mesh),
-                render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
-                draw: Default::default(),
-                visible: Default::default(),
-                main_pass: Default::default(),
-                transform: Default::default(),
-                global_transform: Default::default(),
-            },
-            MeshBundle {
-                mesh: meshes.add({
-                    let mut mesh: Mesh = shape::Box::new(box_size, box_size, box_size).into();
-                    mesh.set_attribute(
-                        Mesh::ATTRIBUTE_COLOR,
-                        vec![[0.0, 1.0, 0.0, 1.0]; mesh.count_vertices()],
-                    );
-                    mesh
-                }),
-                render_pipelines: RenderPipelines::from_handles(&[FILL_PIPELINE.typed()]),
-                draw: Default::default(),
-                visible: Default::default(),
-                main_pass: Default::default(),
-                transform: Transform::from_translation(
-                    self.graph.vertices[self.start_idx()]
-                        .state
-                        .project_to_3d()
-                        .into(),
-                ),
-                global_transform: Default::default(),
-            },
-            MeshBundle {
-                mesh: meshes.add({
-                    let mut mesh: Mesh = shape::Box::new(box_size, box_size, box_size).into();
-                    mesh.set_attribute(
-                        Mesh::ATTRIBUTE_COLOR,
-                        vec![[1.0, 0.0, 0.0, 1.0]; mesh.count_vertices()],
-                    );
-                    mesh
-                }),
-                render_pipelines: RenderPipelines::from_handles(&[FILL_PIPELINE.typed()]),
-                draw: Default::default(),
-                visible: Default::default(),
-                main_pass: Default::default(),
-                transform: Transform::from_translation(
-                    self.graph.vertices[self.stop_idx()]
-                        .state
-                        .project_to_3d()
-                        .into(),
-                ),
-                global_transform: Default::default(),
-            },
-        ]
+        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
+        mesh
     }
 }
 

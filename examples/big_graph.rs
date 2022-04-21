@@ -1,13 +1,19 @@
-use bricks::pl::graph::path::Path;
-use bricks::pl::graph::prm::PRM;
-use bricks::pl::graph::search::spanning_trees::*;
-use bricks::pl::graph::search::CostGuidedSpanningTreeSearch;
-use bricks::pl::na::{Point2, Vector2};
-use bricks::pl::spaces::*;
+use bricks::{
+    pl::{
+        graph::{
+            path::Path,
+            prm::PRM,
+            search::{spanning_trees::*, CostGuidedSpanningTreeSearch},
+        },
+        na::{Point2, Vector2},
+        spaces::*,
+    },
+    vz::{
+        bevy::prelude::*,
+        plugins::{BasePlugins, NON_FILL_PIPELINE},
+    },
+};
 use std::time::Instant;
-use bricks::vz::bevy::prelude::*;
-use bricks::vz::plugins::BasePlugins;
-use bricks::vz::AsEntity;
 
 fn main() {
     App::build()
@@ -33,20 +39,30 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         WeightedAStarLike::<11, 10>::try_on(&prm.graph, a, b),
         W2AStarLike::try_on(&prm.graph, a, b),
     ];
-    prm.state_space
-        .spawn(&mut commands, &mut meshes, Transform::default());
+    // commands.spawn_bundle(MeshBundle {
+    //     mesh: meshes.add(Mesh::from(&prm.state_space)),
+    //     transform: Transform::from_xyz(0.0, y, 0.0),
+    //     render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+    //     ..Default::default()
+    // });
     for (i, search) in IntoIterator::into_iter(searches).enumerate() {
-        Path::from(&search).spawn(
-            &mut commands,
-            &mut meshes,
-            Transform::from_xyz(0.0, (i + 1) as f32 * 22.0, 0.0),
-        );
-        search.spawn(
-            &mut commands,
-            &mut meshes,
-            Transform::from_xyz(0.0, (i + 1) as f32 * 22.0, 0.0),
-        );
+        commands.spawn_bundle(MeshBundle {
+            mesh: meshes.add(Mesh::from(&Path::from(&search))),
+            transform: Transform::from_xyz(0.0, (i + 1) as f32 * 22.0, 0.0),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+            ..Default::default()
+        });
+        commands.spawn_bundle(MeshBundle {
+            mesh: meshes.add(Mesh::from(&search)),
+            transform: Transform::from_xyz(0.0, (i + 1) as f32 * 22.0, 0.0),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+            ..Default::default()
+        });
     }
-    prm.graph
-        .spawn(&mut commands, &mut meshes, Transform::default());
+    commands.spawn_bundle(MeshBundle {
+        mesh: meshes.add(Mesh::from(&prm.graph)),
+        transform: Transform::default(),
+        render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+        ..Default::default()
+    });
 }

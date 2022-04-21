@@ -1,13 +1,19 @@
-use bricks::pl::graph::path::Path;
-use bricks::pl::graph::prm::PRM;
-use bricks::pl::graph::search::spanning_trees::*;
-use bricks::pl::graph::search::CostGuidedSpanningTreeSearch;
-use bricks::pl::na::{Point2, Point3, Vector2, Vector3};
-use bricks::pl::spaces::*;
-use bricks::pl::StateSpace;
-use bricks::vz::bevy::prelude::*;
-use bricks::vz::plugins::BasePlugins;
-use bricks::vz::AsEntity;
+use bricks::{
+    pl::{
+        graph::{
+            path::Path,
+            prm::PRM,
+            search::{spanning_trees::*, CostGuidedSpanningTreeSearch},
+        },
+        na::{Point2, Point3, Vector2, Vector3},
+        spaces::*,
+        StateSpace,
+    },
+    vz::{
+        bevy::prelude::*,
+        plugins::{BasePlugins, NON_FILL_PIPELINE},
+    },
+};
 
 fn main() {
     App::build()
@@ -61,9 +67,9 @@ fn sphere(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, y: f32) {
     search_and_spawn(commands, meshes, a, b, y, prm);
 }
 
-fn search_and_spawn<SS: StateSpace + AsEntity>(
-    mut commands: &mut Commands,
-    mut meshes: &mut ResMut<Assets<Mesh>>,
+fn search_and_spawn<SS: StateSpace>(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
     a: usize,
     b: usize,
     y: f32,
@@ -77,20 +83,30 @@ fn search_and_spawn<SS: StateSpace + AsEntity>(
         WeightedAStarLike::<11, 10>::try_on(&prm.graph, a, b),
         W2AStarLike::try_on(&prm.graph, a, b),
     ];
-    prm.state_space
-        .spawn(&mut commands, &mut meshes, Transform::from_xyz(0.0, y, 0.0));
+    // commands.spawn_bundle(MeshBundle {
+    //     mesh: meshes.add(Mesh::from(&prm.state_space)),
+    //     transform: Transform::from_xyz(0.0, y, 0.0),
+    //     render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+    //     ..Default::default()
+    // });
     for (i, search) in IntoIterator::into_iter(searches).enumerate() {
-        Path::from(&search).spawn(
-            &mut commands,
-            &mut meshes,
-            Transform::from_xyz((i + 1) as f32 * 14.0, y, 0.0),
-        );
-        search.spawn(
-            &mut commands,
-            &mut meshes,
-            Transform::from_xyz((i + 1) as f32 * 14.0, y, 0.0),
-        );
+        commands.spawn_bundle(MeshBundle {
+            mesh: meshes.add(Mesh::from(&Path::from(&search))),
+            transform: Transform::from_xyz((i + 1) as f32 * 14.0, y, 0.0),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+            ..Default::default()
+        });
+        commands.spawn_bundle(MeshBundle {
+            mesh: meshes.add(Mesh::from(&search)),
+            transform: Transform::from_xyz((i + 1) as f32 * 14.0, y, 0.0),
+            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+            ..Default::default()
+        });
     }
-    prm.graph
-        .spawn(&mut commands, &mut meshes, Transform::from_xyz(0.0, y, 0.0));
+    commands.spawn_bundle(MeshBundle {
+        mesh: meshes.add(Mesh::from(&prm.graph)),
+        transform: Transform::from_xyz(0.0, y, 0.0),
+        render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+        ..Default::default()
+    });
 }

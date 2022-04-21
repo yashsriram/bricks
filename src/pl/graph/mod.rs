@@ -31,21 +31,20 @@ impl<S: StateSpace> Graph<S> {
 }
 
 use super::State;
-use crate::vz::bevy::prelude::*;
-use crate::vz::bevy::render::mesh::{Indices, Mesh};
-use crate::vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
-use crate::vz::plugins::NON_FILL_PIPELINE;
-use crate::vz::AsEntity;
+use crate::vz::bevy::render::{
+    mesh::{Indices, Mesh},
+    pipeline::PrimitiveTopology,
+};
 
-impl<SS: StateSpace> AsEntity for Graph<SS> {
-    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+impl<SS: StateSpace> From<&Graph<SS>> for Mesh {
+    fn from(graph: &Graph<SS>) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
-        let positions: Vec<[f32; 3]> = self
+        let positions: Vec<[f32; 3]> = graph
             .vertices
             .iter()
             .map(|Vertex { state, .. }| state.project_to_3d())
             .collect();
-        let indices: Vec<u32> = self
+        let indices: Vec<u32> = graph
             .vertices
             .iter()
             .enumerate()
@@ -69,16 +68,8 @@ impl<SS: StateSpace> AsEntity for Graph<SS> {
         let indices = Indices::U32(indices);
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         mesh.set_indices(Some(indices));
-        let colors = vec![[1.0, 1.0, 1.0, 0.1]; self.vertices.len()];
+        let colors = vec![[1.0, 1.0, 1.0, 0.1]; graph.vertices.len()];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-        vec![MeshBundle {
-            mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
-            draw: Default::default(),
-            visible: Default::default(),
-            main_pass: Default::default(),
-            transform: Default::default(),
-            global_transform: Default::default(),
-        }]
+        mesh
     }
 }

@@ -1,13 +1,8 @@
-use bricks::pl::graph::path::Path;
-use bricks::pl::graph::prm::PRM;
-use bricks::pl::graph::search::spanning_trees::*;
-use bricks::pl::graph::search::CostGuidedSpanningTreeSearch;
-use bricks::pl::na::{Point2, Vector2};
-use bricks::pl::spaces::*;
-use std::time::Instant;
 use bricks::vz::bevy::prelude::*;
+use bricks::vz::bevy::render::mesh::{Indices, Mesh};
+use bricks::vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
 use bricks::vz::plugins::BasePlugins;
-use bricks::vz::AsEntity;
+use bricks::vz::plugins::NON_FILL_PIPELINE;
 
 fn main() {
     App::build()
@@ -17,36 +12,26 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let space = RectangleSpace {
-        size: Vector2::new(54.0, 20.0),
-    };
-    let start = Instant::now();
-    let mut prm = PRM::with_num_samples(space, 60000, 0.9);
-    println!("{:?}", Instant::now() - start);
-    println!("Number of edges = ~{:?}", prm.graph.num_edges());
-    let [a, b] = prm.add([Point2::new(0.3, 0.7), Point2::new(19.5, 17.3)], 0.9);
-    let searches = [
-        DFSLike::try_on(&prm.graph, a, b),
-        BFSLike::try_on(&prm.graph, a, b),
-        UCSLike::try_on(&prm.graph, a, b),
-        AStarLike::try_on(&prm.graph, a, b),
-        WeightedAStarLike::<11, 10>::try_on(&prm.graph, a, b),
-        W2AStarLike::try_on(&prm.graph, a, b),
+    let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
+    let positions = vec![
+        [0.0, 0.0, 0.0],
+        [5.0, 0.0, 0.0],
+        [5.0, 5.0, 0.0],
+        [0.0, 5.0, 0.0],
     ];
-    prm.state_space
-        .spawn(&mut commands, &mut meshes, Transform::default());
-    for (i, search) in IntoIterator::into_iter(searches).enumerate() {
-        Path::from(&search).spawn(
-            &mut commands,
-            &mut meshes,
-            Transform::from_xyz(0.0, (i + 1) as f32 * 22.0, 0.0),
-        );
-        search.spawn(
-            &mut commands,
-            &mut meshes,
-            Transform::from_xyz(0.0, (i + 1) as f32 * 22.0, 0.0),
-        );
-    }
-    prm.graph
-        .spawn(&mut commands, &mut meshes, Transform::default());
+    mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+    let indices = Indices::U32(vec![0, 1, 2, 3, 0]);
+    mesh.set_indices(Some(indices));
+    let colors = vec![[1.0, 1.0, 0.0, 0.1]; 4];
+    mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
+    let mesh_id = meshes.add(mesh);
+    commands.spawn_bundle(MeshBundle {
+        mesh: mesh_id,
+        render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+        draw: Default::default(),
+        visible: Default::default(),
+        main_pass: Default::default(),
+        transform: Default::default(),
+        global_transform: Default::default(),
+    });
 }

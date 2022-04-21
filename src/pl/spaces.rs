@@ -1,9 +1,7 @@
 use super::{State, StateSpace};
 use crate::vz::bevy::prelude::*;
 use crate::vz::bevy::render::mesh::{Indices, Mesh};
-use crate::vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
-use crate::vz::plugins::NON_FILL_PIPELINE;
-use crate::vz::AsEntity;
+use crate::vz::bevy::render::pipeline::PrimitiveTopology;
 use nalgebra::{Point2, Point3, Vector2, Vector3};
 use rand::{distributions::Standard, thread_rng, Rng};
 
@@ -36,29 +34,21 @@ impl StateSpace for RectangleSpace {
     }
 }
 
-impl AsEntity for RectangleSpace {
-    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+impl From<&RectangleSpace> for Mesh {
+    fn from(space: &RectangleSpace) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
         let positions = vec![
             [0.0, 0.0, 0.0],
-            [self.size.x, 0.0, 0.0],
-            [self.size.x, self.size.y, 0.0],
-            [0.0, self.size.y, 0.0],
+            [space.size.x, 0.0, 0.0],
+            [space.size.x, space.size.y, 0.0],
+            [0.0, space.size.y, 0.0],
         ];
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         let indices = Indices::U32(vec![0, 1, 2, 3, 0]);
         mesh.set_indices(Some(indices));
         let colors = vec![[1.0, 1.0, 0.0, 0.1]; 4];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-        vec![MeshBundle {
-            mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
-            draw: Default::default(),
-            visible: Default::default(),
-            main_pass: Default::default(),
-            transform: Default::default(),
-            global_transform: Default::default(),
-        }]
+        mesh
     }
 }
 
@@ -97,28 +87,20 @@ impl State for Point3<f32> {
     }
 }
 
-impl AsEntity for CircleSpace {
-    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+impl From<&CircleSpace> for Mesh {
+    fn from(space: &CircleSpace) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
         let num_partitions: usize = 18;
         let positions: Vec<[f32; 3]> = (0..=num_partitions)
             .map(|i| 2.0 * std::f32::consts::PI / num_partitions as f32 * i as f32)
-            .map(|theta| [self.radius * theta.cos(), self.radius * theta.sin(), 0.0])
+            .map(|theta| [space.radius * theta.cos(), space.radius * theta.sin(), 0.0])
             .collect();
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         let indices = Indices::U32((0..=num_partitions).map(|i| i as u32).collect());
         mesh.set_indices(Some(indices));
         let colors = vec![[1.0, 1.0, 0.0, 0.1]; num_partitions + 1];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-        vec![MeshBundle {
-            mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
-            draw: Default::default(),
-            visible: Default::default(),
-            main_pass: Default::default(),
-            transform: Default::default(),
-            global_transform: Default::default(),
-        }]
+        mesh
     }
 }
 
@@ -143,18 +125,18 @@ impl StateSpace for CuboidSpace {
     }
 }
 
-impl AsEntity for CuboidSpace {
-    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+impl From<&CuboidSpace> for Mesh {
+    fn from(space: &CuboidSpace) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let vertex_positions = vec![
             [0.0, 0.0, 0.0],
-            [self.size.x, 0.0, 0.0],
-            [self.size.x, self.size.y, 0.0],
-            [0.0, self.size.y, 0.0],
-            [0.0, 0.0, self.size.z],
-            [self.size.x, 0.0, self.size.z],
-            [self.size.x, self.size.y, self.size.z],
-            [0.0, self.size.y, self.size.z],
+            [space.size.x, 0.0, 0.0],
+            [space.size.x, space.size.y, 0.0],
+            [0.0, space.size.y, 0.0],
+            [0.0, 0.0, space.size.z],
+            [space.size.x, 0.0, space.size.z],
+            [space.size.x, space.size.y, space.size.z],
+            [0.0, space.size.y, space.size.z],
         ];
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertex_positions);
         let indices = Indices::U32(vec![
@@ -163,15 +145,7 @@ impl AsEntity for CuboidSpace {
         mesh.set_indices(Some(indices));
         let vertex_colors = vec![[1.0, 1.0, 0.0, 0.1]; 8];
         mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
-        vec![MeshBundle {
-            mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
-            draw: Default::default(),
-            visible: Default::default(),
-            main_pass: Default::default(),
-            transform: Default::default(),
-            global_transform: Default::default(),
-        }]
+        mesh
     }
 }
 
@@ -205,10 +179,10 @@ impl StateSpace for SphereSpace {
     }
 }
 
-impl AsEntity for SphereSpace {
-    fn into_mesh_bundles(&self, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<MeshBundle> {
+impl From<&SphereSpace> for Mesh {
+    fn from(space: &SphereSpace) -> Self {
         let mut mesh: Mesh = shape::Icosphere {
-            radius: self.radius,
+            radius: space.radius,
             subdivisions: 10,
         }
         .into();
@@ -216,14 +190,6 @@ impl AsEntity for SphereSpace {
             Mesh::ATTRIBUTE_COLOR,
             vec![[1.0, 1.0, 0.0, 0.1]; mesh.count_vertices()],
         );
-        vec![MeshBundle {
-            mesh: meshes.add(mesh),
-            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
-            draw: Default::default(),
-            visible: Default::default(),
-            main_pass: Default::default(),
-            transform: Default::default(),
-            global_transform: Default::default(),
-        }]
+        mesh
     }
 }
