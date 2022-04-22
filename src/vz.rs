@@ -1,3 +1,4 @@
+pub use bevy;
 use bevy::app::{AppBuilder, Plugin, PluginGroup, PluginGroupBuilder};
 use bevy::diagnostic::Diagnostics;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;

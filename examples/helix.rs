@@ -3,7 +3,7 @@ use bevy::render::pipeline::PrimitiveTopology;
 use bricks::vz::bevy::prelude::*;
 use bricks::vz::bevy::render::mesh::VertexAttributeValues;
 use bricks::vz::bevy::render::pipeline::RenderPipeline;
-use bricks::vz::plugins::*;
+use bricks::vz::*;
 
 fn main() {
     App::build()

@@ -6,7 +6,6 @@
 - [ ] Scalable (give bounds), Parallelize (when possible).
 - [ ] Visualizable.
 - [ ] Testable, get lots of good testcases.
-    - Try to avoid "natural looking" motion generation problems.
 - [ ] Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
 - [ ] Teachable to others, learnable by others.
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).

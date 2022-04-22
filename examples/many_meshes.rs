@@ -1,5 +1,5 @@
 use bricks::vz::bevy::prelude::*;
-use bricks::vz::plugins::*;
+use bricks::vz::*;
 
 fn main() {
     App::build()

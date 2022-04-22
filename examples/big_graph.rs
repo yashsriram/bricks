@@ -10,7 +10,7 @@ use bricks::{
     },
     vz::{
         bevy::prelude::*,
-        plugins::{BasePlugins, NON_FILL_PIPELINE},
+        {BasePlugins, NON_FILL_PIPELINE},
     },
 };
 use std::time::Instant;

@@ -1,8 +1,8 @@
 use bricks::vz::bevy::prelude::*;
 use bricks::vz::bevy::render::mesh::{Indices, Mesh};
 use bricks::vz::bevy::render::pipeline::{PrimitiveTopology, RenderPipelines};
-use bricks::vz::plugins::BasePlugins;
-use bricks::vz::plugins::NON_FILL_PIPELINE;
+use bricks::vz::BasePlugins;
+use bricks::vz::NON_FILL_PIPELINE;
 
 fn main() {
     App::build()
