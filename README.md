@@ -1,6 +1,5 @@
 - Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough.
 ### roadmap
-- [ ] Immediate mode like rendering using mesh mutation
 - [ ] Remove unncessary generalization
 
 ### sanity check

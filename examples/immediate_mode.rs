@@ -1,4 +1,4 @@
-use bevy::prelude::shape::{Capsule, CapsuleUvProfile, Torus};
+use bevy::prelude::shape::{Capsule, Torus};
 use bricks::vz::bevy::prelude::*;
 use bricks::vz::bevy::render::pipeline::RenderPipeline;
 use bricks::vz::*;
