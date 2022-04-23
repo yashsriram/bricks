@@ -1,3 +1,8 @@
+- Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough.
+### roadmap
+- [ ] Immediate mode like rendering using mesh mutation
+- [ ] Remove unncessary generalization
+
 ### sanity check
 - [ ] Small, simple, clear, independent problems rather than a big problem. Increment problem as we go.
 - [ ] Useful, usable, rigourously understood solutions (proofs, guarantees (correctness, time, space usage, ...), bounds, ...).
@@ -10,8 +15,6 @@
 - [ ] Teachable to others, learnable by others.
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).
 
-
-### roadmap
 
 #### rust libs, bins, examples, benchmarks create/contribute
 - Churning motion-planning, escape-room, stick-solo, drive, wall-e repos; i.e. extracting a lib crate and bin crates from these repos.

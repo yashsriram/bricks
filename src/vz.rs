@@ -82,12 +82,12 @@ impl Plugin for FPSTitlePlugin {
 fn fps_title_plugin(diagnostics: Res<Diagnostics>, mut windows: ResMut<Windows>) {
     let window = windows.get_primary_mut().unwrap();
     window.set_title(format!(
-        "FPS: {:.0}",
+        "Δt: {:.3}s",
         diagnostics
-            .get(FrameTimeDiagnosticsPlugin::FPS)
+            .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
             .unwrap()
             .average()
-            .unwrap_or(0.0)
+            .unwrap_or(0.0),
     ));
 }
 
