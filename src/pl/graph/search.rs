@@ -1,9 +1,7 @@
-use crate::{
-    pl::{graph::Graph, State, StateSpace},
-    vz::bevy::render::{
-        mesh::{Indices, Mesh},
-        pipeline::PrimitiveTopology,
-    },
+use crate::pl::{graph::Graph, State, StateSpace};
+use bevy::render::{
+    mesh::{Indices, Mesh},
+    pipeline::PrimitiveTopology,
 };
 use std::{
     cmp::{Ordering, Reverse},

@@ -1,7 +1,11 @@
-use super::{State, StateSpace};
-use crate::vz::bevy::prelude::*;
-use crate::vz::bevy::render::mesh::{Indices, Mesh};
-use crate::vz::bevy::render::pipeline::PrimitiveTopology;
+use crate::pl::{State, StateSpace};
+use bevy::{
+    prelude::*,
+    render::{
+        mesh::{Indices, Mesh},
+        pipeline::PrimitiveTopology,
+    },
+};
 use nalgebra::{Point2, Point3, Vector2, Vector3};
 use rand::{distributions::Standard, thread_rng, Rng};
 

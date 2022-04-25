@@ -1,8 +1,4 @@
-- Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough.
-### roadmap
-- [ ] Remove unncessary generalization
-
-### sanity check
+# sanity check
 - [ ] Small, simple, clear, independent problems rather than a big problem. Increment problem as we go.
 - [ ] Useful, usable, rigourously understood solutions (proofs, guarantees (correctness, time, space usage, ...), bounds, ...).
 - [ ] Make a running system and iterate.
@@ -13,20 +9,16 @@
 - [ ] Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
 - [ ] Teachable to others, learnable by others.
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).
+- [ ] Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough. Immediate mode is probably fast enough.
 
 
-#### rust libs, bins, examples, benchmarks create/contribute
-- Churning motion-planning, escape-room, stick-solo, drive, wall-e repos; i.e. extracting a lib crate and bin crates from these repos.
+## rust libs, bins, examples, benchmarks create/contribute
+- Churning existing repos, extracting a lib crate and bin crates from these repos.
 
-- Demos and tests until now
-    - [ ] All demos
-    - [ ] consume <- motion-planning repo
-        - [ ] source code
-        - [ ] demos
-    - [ ] Test on datasets
-        - Moving AI lab
-        - Open Street maps
-        - https://github.com/je-suis-tm/graph-theory
+- [ ] Test on datasets
+    - Moving AI lab
+    - Open Street maps
+    - https://github.com/je-suis-tm/graph-theory
 - `Vis`
     - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
     - [x] 3D Perspective FPS camera
@@ -55,7 +47,7 @@
 - interval state intersections (ccd)
 - actual problem to geometric search problem formulation as composition of simple things like geometric entity, start, goal, option<obstacles>,
 
-#### viz tools
+## viz tools
 graphics-viz, rust libs create/contribute.
 1. Visualizer as alternatives for rviz and other robot vis utility tools.
 1. Small interesting problems.
@@ -66,7 +58,7 @@ graphics-viz, rust libs create/contribute.
 1. Fourier bots
 1. Speedup stuff e.g. Parallelization.
 
-#### pp
+## pp
 - Path planning
 - Path planning with times at vertices = trajectory planning?
 - Path planning with fancy abstractions (joint spaces) = motion planning
@@ -106,7 +98,7 @@ graphics-viz, rust libs create/contribute.
     1. Graph search (graph structures, algorithms)
     1. Speedup stuff e.g. Parallelization.
 
-#### sen
+## sen
 - sensing crate, rust libs create/contribute.
 1. No noise sensor models and algos.
 1. Noisy sensor models and algos.
@@ -115,7 +107,7 @@ graphics-viz, rust libs create/contribute.
 1. Speedup stuff e.g. Parallelization.
 1. Combining classical, ML, DL, RL and any L sensing.
 
-#### dyna and ctrl
+## dyna and ctrl
 - dynamics crate, models of moving. (velocity, diffdrive, bicycle, etc...)
 - agent dynamics and control, integration
 - control crate, controls dyna models.

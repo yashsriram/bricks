@@ -1,4 +1,9 @@
+use super::State;
 use super::StateSpace;
+use bevy::render::{
+    mesh::{Indices, Mesh},
+    pipeline::PrimitiveTopology,
+};
 use std::collections::HashSet;
 
 pub mod path;
@@ -29,12 +34,6 @@ impl<S: StateSpace> Graph<S> {
             .sum()
     }
 }
-
-use super::State;
-use crate::vz::bevy::render::{
-    mesh::{Indices, Mesh},
-    pipeline::PrimitiveTopology,
-};
 
 impl<SS: StateSpace> From<&Graph<SS>> for Mesh {
     fn from(graph: &Graph<SS>) -> Self {

@@ -1,7 +1,7 @@
 use super::search::SpanningTreeView;
 use super::{State, StateSpace};
-use crate::vz::bevy::render::mesh::{Indices, Mesh};
-use crate::vz::bevy::render::pipeline::PrimitiveTopology;
+use bevy::render::mesh::{Indices, Mesh};
+use bevy::render::pipeline::PrimitiveTopology;
 
 #[derive(Debug)]
 pub struct Path<SS: StateSpace> {
