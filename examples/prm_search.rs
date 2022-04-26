@@ -1,3 +1,4 @@
+use bevy::prelude::*;
 use bricks::{
     pl::{
         graph::{
@@ -9,10 +10,7 @@ use bricks::{
         spaces::*,
         StateSpace,
     },
-    vz::{
-        bevy::prelude::*,
-        {BasePlugins, NON_FILL_PIPELINE},
-    },
+    vz::{BasePlugins, NON_FILL_PIPELINE},
 };
 
 fn main() {

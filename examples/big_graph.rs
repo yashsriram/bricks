@@ -1,3 +1,4 @@
+use bevy::prelude::*;
 use bricks::{
     pl::{
         graph::{
@@ -8,10 +9,7 @@ use bricks::{
         na::{Point2, Vector2},
         spaces::*,
     },
-    vz::{
-        bevy::prelude::*,
-        {BasePlugins, NON_FILL_PIPELINE},
-    },
+    vz::{BasePlugins, NON_FILL_PIPELINE},
 };
 use std::time::Instant;
 

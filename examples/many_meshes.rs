@@ -1,4 +1,4 @@
-use bricks::vz::bevy::prelude::*;
+use bevy::{prelude::*, render::pipeline::RenderPipeline};
 use bricks::vz::*;
 
 fn main() {
@@ -28,7 +28,6 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         ],
     );
     let mesh = meshes.add(mesh);
-    use bricks::vz::bevy::render::pipeline::RenderPipeline;
     // 10_000 should give ~30FPS
     for _ in 0..10_000 {
         commands
