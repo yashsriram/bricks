@@ -6,13 +6,12 @@
 - [ ] Scalable (give bounds), Parallelize (when possible).
 - [ ] Visualizable.
 - [ ] Testable, get lots of good testcases.
+- [ ] Test on datasets
 - [ ] Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
 - [ ] Teachable to others, learnable by others.
 - [ ] Implement it in Rust and other good langagues (try to avoid C++).
 - [ ] Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough. Immediate mode is probably fast enough.
 
-
-- [ ] Test on datasets
 - `Vis`
     - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
     - [x] 3D Perspective FPS camera
@@ -37,6 +36,3 @@
     - [x] Sampling from `StateSpace`
     - [x] Connecting `Vertices<State>` using dist() trait fn and edge len
     - [x] Multi (agent) searchable from `Graph`
-- single state intersections (instantaneous)
-- interval state intersections (ccd)
-- actual problem to geometric search problem formulation as composition of simple things like geometric entity, start, goal, option<obstacles>,
