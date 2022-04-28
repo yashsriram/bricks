@@ -13,8 +13,6 @@
 - [ ] Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough. Immediate mode is probably fast enough.
 
 - `Vis`
-    - [x] minimal rendering of a mesh, fill/stroke, with color, speed (stress test)
-    - [x] 3D Perspective FPS camera
 - `State`, `StateSpace`
     - [x] SphereSpace (sqrt?)
 - `Graph` on a `StateSpace`; Vertex = (`StateSpace::State`,  `Set<VertexIdx>`)
