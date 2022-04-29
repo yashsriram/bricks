@@ -4,36 +4,12 @@ use bevy::render::{
     pipeline::PrimitiveTopology,
 };
 use nalgebra::Point3;
+use ordered_float::OrderedFloat;
 use std::{
     cmp::{Ordering, Reverse},
     collections::{BinaryHeap, HashMap, HashSet},
     fmt::Debug,
 };
-
-struct CostOrdAndIndex<Cost: Ord> {
-    idx: usize,
-    cost: Cost,
-}
-
-impl<Cost: Ord> PartialEq for CostOrdAndIndex<Cost> {
-    fn eq(&self, other: &Self) -> bool {
-        self.cost == other.cost
-    }
-}
-
-impl<Cost: Ord> Eq for CostOrdAndIndex<Cost> {}
-
-impl<Cost: Ord> Ord for CostOrdAndIndex<Cost> {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.cost.cmp(&other.cost)
-    }
-}
-
-impl<Cost: Ord> PartialOrd for CostOrdAndIndex<Cost> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
 
 #[derive(Debug)]
 pub struct SpanningTreeView<'a> {
@@ -42,7 +18,6 @@ pub struct SpanningTreeView<'a> {
     stop_idx: usize,
     pub(crate) parent_map: HashMap<usize, Option<usize>>,
     pub(crate) fringe: HashSet<usize>,
-    // tree: HashMap<usize, SC>,
 }
 
 impl<'a> SpanningTreeView<'a> {
@@ -156,7 +131,34 @@ pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
         let collec_alloc_size = (graph.vertices.len() as f32 * initial_alloc_frac) as usize;
         let mut parent_map = HashMap::with_capacity(collec_alloc_size);
         parent_map.insert(start_idx, None);
+
         let mut fringe = BinaryHeap::with_capacity(collec_alloc_size);
+
+        struct CostOrdAndIndex<Cost: Ord> {
+            idx: usize,
+            cost: Cost,
+        }
+
+        impl<Cost: Ord> PartialEq for CostOrdAndIndex<Cost> {
+            fn eq(&self, other: &Self) -> bool {
+                self.cost == other.cost
+            }
+        }
+
+        impl<Cost: Ord> Eq for CostOrdAndIndex<Cost> {}
+
+        impl<Cost: Ord> Ord for CostOrdAndIndex<Cost> {
+            fn cmp(&self, other: &Self) -> Ordering {
+                self.cost.cmp(&other.cost)
+            }
+        }
+
+        impl<Cost: Ord> PartialOrd for CostOrdAndIndex<Cost> {
+            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+                Some(self.cmp(other))
+            }
+        }
+
         fringe.push(Reverse(CostOrdAndIndex {
             idx: start_idx,
             cost: start_search_state.cost(),
@@ -194,97 +196,89 @@ pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
                 .into_iter()
                 .map(|Reverse(CostOrdAndIndex { idx, .. })| idx)
                 .collect(),
-            // tree: tree,
         }
     }
 }
 
-pub mod spanning_trees {
-    use super::CostGuidedSpanningTreeSearch;
-    use nalgebra::Point3;
-    use ordered_float::OrderedFloat;
-
-    #[derive(Debug)]
-    pub struct DFSLike {
-        order: isize,
-    }
-
-    impl CostGuidedSpanningTreeSearch<isize> for DFSLike {
-        fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
-            Self { order: -0 }
-        }
-
-        fn as_adj(_: &Point3<f32>, _: &Point3<f32>, _: &Point3<f32>, parent: &Self) -> Self {
-            Self {
-                order: parent.order - 1,
-            }
-        }
-
-        fn cost(&self) -> isize {
-            self.order
-        }
-    }
-
-    #[derive(Debug)]
-    pub struct BFSLike {
-        jumps_from_start: usize,
-    }
-
-    impl CostGuidedSpanningTreeSearch<usize> for BFSLike {
-        fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
-            Self {
-                jumps_from_start: 0,
-            }
-        }
-
-        fn as_adj(_: &Point3<f32>, _: &Point3<f32>, _: &Point3<f32>, parent: &Self) -> Self {
-            Self {
-                jumps_from_start: parent.jumps_from_start + 1,
-            }
-        }
-
-        fn cost(&self) -> usize {
-            self.jumps_from_start
-        }
-    }
-
-    #[derive(Debug)]
-    pub struct WeightedAStarLike<const NUM: usize, const DEN: usize> {
-        dist_from_start: f32,
-        total_cost: f32,
-    }
-
-    impl<const NUM: usize, const DEN: usize> CostGuidedSpanningTreeSearch<OrderedFloat<f32>>
-        for WeightedAStarLike<NUM, DEN>
-    {
-        fn as_start(my_vertex_state: &Point3<f32>, stop_vertex_state: &Point3<f32>) -> Self {
-            Self {
-                dist_from_start: 0.0,
-                total_cost: 0.0 + (my_vertex_state - stop_vertex_state).norm(),
-            }
-        }
-
-        fn as_adj(
-            prev_vertex_state: &Point3<f32>,
-            my_vertex_state: &Point3<f32>,
-            stop_vertex_state: &Point3<f32>,
-            parent: &Self,
-        ) -> Self {
-            let dist_from_start =
-                parent.dist_from_start + (prev_vertex_state - my_vertex_state).norm();
-            Self {
-                dist_from_start,
-                total_cost: dist_from_start
-                    + (my_vertex_state - stop_vertex_state).norm() * (NUM as f32 / DEN as f32),
-            }
-        }
-
-        fn cost(&self) -> OrderedFloat<f32> {
-            OrderedFloat(self.total_cost)
-        }
-    }
-
-    pub type UCSLike = WeightedAStarLike<0, 1>;
-    pub type AStarLike = WeightedAStarLike<1, 1>;
-    pub type W2AStarLike = WeightedAStarLike<2, 1>;
+#[derive(Debug)]
+pub struct DFSLike {
+    order: isize,
 }
+
+impl CostGuidedSpanningTreeSearch<isize> for DFSLike {
+    fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
+        Self { order: -0 }
+    }
+
+    fn as_adj(_: &Point3<f32>, _: &Point3<f32>, _: &Point3<f32>, parent: &Self) -> Self {
+        Self {
+            order: parent.order - 1,
+        }
+    }
+
+    fn cost(&self) -> isize {
+        self.order
+    }
+}
+
+#[derive(Debug)]
+pub struct BFSLike {
+    jumps_from_start: usize,
+}
+
+impl CostGuidedSpanningTreeSearch<usize> for BFSLike {
+    fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
+        Self {
+            jumps_from_start: 0,
+        }
+    }
+
+    fn as_adj(_: &Point3<f32>, _: &Point3<f32>, _: &Point3<f32>, parent: &Self) -> Self {
+        Self {
+            jumps_from_start: parent.jumps_from_start + 1,
+        }
+    }
+
+    fn cost(&self) -> usize {
+        self.jumps_from_start
+    }
+}
+
+#[derive(Debug)]
+pub struct WeightedAStarLike<const NUM: usize, const DEN: usize> {
+    dist_from_start: f32,
+    total_cost: f32,
+}
+
+impl<const NUM: usize, const DEN: usize> CostGuidedSpanningTreeSearch<OrderedFloat<f32>>
+    for WeightedAStarLike<NUM, DEN>
+{
+    fn as_start(my_vertex_state: &Point3<f32>, stop_vertex_state: &Point3<f32>) -> Self {
+        Self {
+            dist_from_start: 0.0,
+            total_cost: 0.0 + (my_vertex_state - stop_vertex_state).norm(),
+        }
+    }
+
+    fn as_adj(
+        prev_vertex_state: &Point3<f32>,
+        my_vertex_state: &Point3<f32>,
+        stop_vertex_state: &Point3<f32>,
+        parent: &Self,
+    ) -> Self {
+        let dist_from_start = parent.dist_from_start + (prev_vertex_state - my_vertex_state).norm();
+        Self {
+            dist_from_start,
+            total_cost: dist_from_start
+                + (my_vertex_state - stop_vertex_state).norm() * (NUM as f32 / DEN as f32),
+        }
+    }
+
+    fn cost(&self) -> OrderedFloat<f32> {
+        OrderedFloat(self.total_cost)
+    }
+}
+
+pub type UCSLike = WeightedAStarLike<0, 1>;
+pub type AStarLike = WeightedAStarLike<1, 1>;
+pub type W2AStarLike = WeightedAStarLike<2, 1>;

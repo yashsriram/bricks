@@ -4,10 +4,8 @@ use bricks::{
         path::Path,
         prm::PRM,
         search::{
-            spanning_trees::{
-                AStarLike, BFSLike, DFSLike, UCSLike, W2AStarLike, WeightedAStarLike,
-            },
-            CostGuidedSpanningTreeSearch,
+            AStarLike, BFSLike, CostGuidedSpanningTreeSearch, DFSLike, UCSLike, W2AStarLike,
+            WeightedAStarLike,
         },
         spaces::CuboidSpace,
     },
