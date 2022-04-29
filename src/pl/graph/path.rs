@@ -1,21 +1,21 @@
 use super::search::SpanningTreeView;
-use super::{State, StateSpace};
 use bevy::render::mesh::{Indices, Mesh};
 use bevy::render::pipeline::PrimitiveTopology;
+use nalgebra::Point3;
 
 #[derive(Debug)]
-pub struct Path<SS: StateSpace> {
-    pub(crate) vertices: Vec<SS::State>,
+pub struct Path {
+    pub(crate) vertices: Vec<Point3<f32>>,
 }
 
-impl<S: StateSpace> Path<S> {
+impl Path {
     pub fn len(&self) -> usize {
         self.vertices.len()
     }
 }
 
-impl<'a, SS: StateSpace> From<&SpanningTreeView<'a, SS>> for Path<SS> {
-    fn from(ts: &SpanningTreeView<'a, SS>) -> Path<SS> {
+impl<'a> From<&SpanningTreeView<'a>> for Path {
+    fn from(ts: &SpanningTreeView<'a>) -> Path {
         let vertices = match ts.path_to_stop() {
             None => vec![],
             Some(path) => path
@@ -27,10 +27,10 @@ impl<'a, SS: StateSpace> From<&SpanningTreeView<'a, SS>> for Path<SS> {
     }
 }
 
-impl<SS: StateSpace> From<&Path<SS>> for Mesh {
-    fn from(path: &Path<SS>) -> Self {
+impl From<&Path> for Mesh {
+    fn from(path: &Path) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
-        let positions: Vec<[f32; 3]> = path.vertices.iter().map(|v| v.project_to_3d()).collect();
+        let positions: Vec<[f32; 3]> = path.vertices.iter().map(|v| [v.x, v.y, v.z]).collect();
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         let indices = Indices::U32((0..path.vertices.len() as u32).collect());
         mesh.set_indices(Some(indices));

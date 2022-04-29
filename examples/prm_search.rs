@@ -6,12 +6,11 @@ use bricks::{
             prm::PRM,
             search::{spanning_trees::*, CostGuidedSpanningTreeSearch},
         },
-        na::Vector3,
-        spaces::*,
+        CuboidSpace,
     },
     vz::{BasePlugins, NON_FILL_PIPELINE},
 };
-use nalgebra::Point3;
+use nalgebra::{Point3, Vector3};
 
 fn main() {
     App::build()

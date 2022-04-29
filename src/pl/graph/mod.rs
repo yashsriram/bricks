@@ -1,9 +1,8 @@
-use super::State;
-use super::StateSpace;
 use bevy::render::{
     mesh::{Indices, Mesh},
     pipeline::PrimitiveTopology,
 };
+use nalgebra::Point3;
 use std::collections::HashSet;
 
 pub mod path;
@@ -11,17 +10,17 @@ pub mod prm;
 pub mod search;
 
 #[derive(Debug)]
-pub struct Vertex<S: StateSpace> {
-    pub(crate) state: S::State,
+pub struct Vertex {
+    pub(crate) state: Point3<f32>,
     pub(crate) adjacencies: HashSet<usize>,
 }
 
 #[derive(Debug)]
-pub struct Graph<S: StateSpace> {
-    pub(crate) vertices: Vec<Vertex<S>>,
+pub struct Graph {
+    pub(crate) vertices: Vec<Vertex>,
 }
 
-impl<S: StateSpace> Graph<S> {
+impl Graph {
     pub fn num_edges(&self) -> usize {
         self.vertices
             .iter()
@@ -35,13 +34,13 @@ impl<S: StateSpace> Graph<S> {
     }
 }
 
-impl<SS: StateSpace> From<&Graph<SS>> for Mesh {
-    fn from(graph: &Graph<SS>) -> Self {
+impl From<&Graph> for Mesh {
+    fn from(graph: &Graph) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let positions: Vec<[f32; 3]> = graph
             .vertices
             .iter()
-            .map(|Vertex { state, .. }| state.project_to_3d())
+            .map(|Vertex { state, .. }| [state.x, state.y, state.z])
             .collect();
         let indices: Vec<u32> = graph
             .vertices

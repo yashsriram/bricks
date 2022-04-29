@@ -1,8 +1,9 @@
-use crate::pl::{graph::Graph, State, StateSpace};
+use crate::pl::graph::Graph;
 use bevy::render::{
     mesh::{Indices, Mesh},
     pipeline::PrimitiveTopology,
 };
+use nalgebra::Point3;
 use std::{
     cmp::{Ordering, Reverse},
     collections::{BinaryHeap, HashMap, HashSet},
@@ -35,8 +36,8 @@ impl<Cost: Ord> PartialOrd for CostOrdAndIndex<Cost> {
 }
 
 #[derive(Debug)]
-pub struct SpanningTreeView<'a, SS: StateSpace> {
-    pub(crate) graph: &'a Graph<SS>,
+pub struct SpanningTreeView<'a> {
+    pub(crate) graph: &'a Graph,
     start_idx: usize,
     stop_idx: usize,
     pub(crate) parent_map: HashMap<usize, Option<usize>>,
@@ -44,7 +45,7 @@ pub struct SpanningTreeView<'a, SS: StateSpace> {
     // tree: HashMap<usize, SC>,
 }
 
-impl<'a, SS: StateSpace> SpanningTreeView<'a, SS> {
+impl<'a> SpanningTreeView<'a> {
     pub fn start_idx(&self) -> usize {
         self.start_idx
     }
@@ -80,8 +81,8 @@ impl<'a, SS: StateSpace> SpanningTreeView<'a, SS> {
     }
 }
 
-impl<'a, SS: StateSpace> From<&SpanningTreeView<'a, SS>> for Mesh {
-    fn from(spanning_tree_view: &SpanningTreeView<'a, SS>) -> Self {
+impl<'a> From<&SpanningTreeView<'a>> for Mesh {
+    fn from(spanning_tree_view: &SpanningTreeView<'a>) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let flattened_tree: Vec<usize> = spanning_tree_view
             .parent_map
@@ -92,9 +93,8 @@ impl<'a, SS: StateSpace> From<&SpanningTreeView<'a, SS>> for Mesh {
         let positions: Vec<[f32; 3]> = flattened_tree
             .iter()
             .map(|idx| {
-                spanning_tree_view.graph.vertices[*idx]
-                    .state
-                    .project_to_3d()
+                let state = spanning_tree_view.graph.vertices[*idx].state;
+                [state.x, state.y, state.z]
             })
             .collect();
         let indices: Vec<u32> = positions
@@ -124,32 +124,28 @@ impl<'a, SS: StateSpace> From<&SpanningTreeView<'a, SS>> for Mesh {
     }
 }
 
-pub trait CostGuidedSpanningTreeSearch<SS: StateSpace, Cost: Ord>: Debug + Sized {
-    fn as_start(my_vertex_state: &SS::State, stop_vertex_state: &SS::State) -> Self;
+pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
+    fn as_start(my_vertex_state: &Point3<f32>, stop_vertex_state: &Point3<f32>) -> Self;
 
     fn as_adj(
-        prev_vertex_state: &SS::State,
-        my_vertex_state: &SS::State,
-        stop_vertex_state: &SS::State,
+        prev_vertex_state: &Point3<f32>,
+        my_vertex_state: &Point3<f32>,
+        stop_vertex_state: &Point3<f32>,
         parent: &Self,
     ) -> Self;
 
     fn cost(&self) -> Cost;
 
-    fn try_on<'a>(
-        graph: &'a Graph<SS>,
-        start_idx: usize,
-        stop_idx: usize,
-    ) -> SpanningTreeView<'a, SS> {
+    fn try_on<'a>(graph: &'a Graph, start_idx: usize, stop_idx: usize) -> SpanningTreeView<'a> {
         Self::try_on_with_alloc(graph, start_idx, stop_idx, 1.0)
     }
 
     fn try_on_with_alloc<'a>(
-        graph: &'a Graph<SS>,
+        graph: &'a Graph,
         start_idx: usize,
         stop_idx: usize,
         initial_alloc_frac: f32,
-    ) -> SpanningTreeView<'a, SS> {
+    ) -> SpanningTreeView<'a> {
         assert!(start_idx < graph.vertices.len());
         assert!(stop_idx < graph.vertices.len());
         assert!(initial_alloc_frac >= 0.0);
@@ -204,8 +200,8 @@ pub trait CostGuidedSpanningTreeSearch<SS: StateSpace, Cost: Ord>: Debug + Sized
 }
 
 pub mod spanning_trees {
-    use super::super::super::{State, StateSpace};
     use super::CostGuidedSpanningTreeSearch;
+    use nalgebra::Point3;
     use ordered_float::OrderedFloat;
 
     #[derive(Debug)]
@@ -213,12 +209,12 @@ pub mod spanning_trees {
         order: isize,
     }
 
-    impl<SS: StateSpace> CostGuidedSpanningTreeSearch<SS, isize> for DFSLike {
-        fn as_start(_: &SS::State, _: &SS::State) -> Self {
+    impl CostGuidedSpanningTreeSearch<isize> for DFSLike {
+        fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
             Self { order: -0 }
         }
 
-        fn as_adj(_: &SS::State, _: &SS::State, _: &SS::State, parent: &Self) -> Self {
+        fn as_adj(_: &Point3<f32>, _: &Point3<f32>, _: &Point3<f32>, parent: &Self) -> Self {
             Self {
                 order: parent.order - 1,
             }
@@ -234,14 +230,14 @@ pub mod spanning_trees {
         jumps_from_start: usize,
     }
 
-    impl<SS: StateSpace> CostGuidedSpanningTreeSearch<SS, usize> for BFSLike {
-        fn as_start(_: &SS::State, _: &SS::State) -> Self {
+    impl CostGuidedSpanningTreeSearch<usize> for BFSLike {
+        fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
             Self {
                 jumps_from_start: 0,
             }
         }
 
-        fn as_adj(_: &SS::State, _: &SS::State, _: &SS::State, parent: &Self) -> Self {
+        fn as_adj(_: &Point3<f32>, _: &Point3<f32>, _: &Point3<f32>, parent: &Self) -> Self {
             Self {
                 jumps_from_start: parent.jumps_from_start + 1,
             }
@@ -258,27 +254,28 @@ pub mod spanning_trees {
         total_cost: f32,
     }
 
-    impl<SS: StateSpace, const NUM: usize, const DEN: usize>
-        CostGuidedSpanningTreeSearch<SS, OrderedFloat<f32>> for WeightedAStarLike<NUM, DEN>
+    impl<const NUM: usize, const DEN: usize> CostGuidedSpanningTreeSearch<OrderedFloat<f32>>
+        for WeightedAStarLike<NUM, DEN>
     {
-        fn as_start(my_vertex_state: &SS::State, stop_vertex_state: &SS::State) -> Self {
+        fn as_start(my_vertex_state: &Point3<f32>, stop_vertex_state: &Point3<f32>) -> Self {
             Self {
                 dist_from_start: 0.0,
-                total_cost: 0.0 + my_vertex_state.dist(&stop_vertex_state),
+                total_cost: 0.0 + (my_vertex_state - stop_vertex_state).norm(),
             }
         }
 
         fn as_adj(
-            prev_vertex_state: &SS::State,
-            my_vertex_state: &SS::State,
-            stop_vertex_state: &SS::State,
+            prev_vertex_state: &Point3<f32>,
+            my_vertex_state: &Point3<f32>,
+            stop_vertex_state: &Point3<f32>,
             parent: &Self,
         ) -> Self {
-            let dist_from_start = parent.dist_from_start + prev_vertex_state.dist(&my_vertex_state);
+            let dist_from_start =
+                parent.dist_from_start + (prev_vertex_state - my_vertex_state).norm();
             Self {
                 dist_from_start,
                 total_cost: dist_from_start
-                    + my_vertex_state.dist(&stop_vertex_state) * (NUM as f32 / DEN as f32),
+                    + (my_vertex_state - stop_vertex_state).norm() * (NUM as f32 / DEN as f32),
             }
         }
 
