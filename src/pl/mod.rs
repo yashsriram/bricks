@@ -1,4 +1,7 @@
 pub mod graph;
+pub mod path;
+pub mod prm;
+pub mod search;
 
 use bevy::render::{
     mesh::{Indices, Mesh},

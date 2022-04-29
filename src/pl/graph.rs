@@ -5,10 +5,6 @@ use bevy::render::{
 use nalgebra::Point3;
 use std::collections::HashSet;
 
-pub mod path;
-pub mod prm;
-pub mod search;
-
 #[derive(Debug)]
 pub struct Vertex {
     pub(crate) state: Point3<f32>,

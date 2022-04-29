@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 use bricks::{
     pl::{
-        graph::{
-            path::Path,
-            prm::PRM,
-            search::{spanning_trees::*, CostGuidedSpanningTreeSearch},
+        path::Path,
+        prm::PRM,
+        search::{
+            spanning_trees::{
+                AStarLike, BFSLike, DFSLike, UCSLike, W2AStarLike, WeightedAStarLike,
+            },
+            CostGuidedSpanningTreeSearch,
         },
         CuboidSpace,
     },
