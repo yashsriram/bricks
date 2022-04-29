@@ -26,7 +26,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let space = CuboidSpace {
         size: Vector3::new(12.0, 10.0, 5.0),
     };
-    let mut prm = PRM::with_num_samples(space, 2000, 1.0);
+    let mut prm = PRM::with_num_samples(&space, 2000, 1.0);
     let [a, b] = prm.add(
         [Point3::new(0.3, 0.7, 0.5), Point3::new(9.5, 7.3, 4.0)],
         1.0,
@@ -39,6 +39,12 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         WeightedAStarLike::<11, 10>::try_on(&prm.graph, a, b),
         W2AStarLike::try_on(&prm.graph, a, b),
     ];
+    commands.spawn_bundle(MeshBundle {
+        mesh: meshes.add(Mesh::from(&space)),
+        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+        ..Default::default()
+    });
     for (i, search) in IntoIterator::into_iter(searches).enumerate() {
         commands.spawn_bundle(MeshBundle {
             mesh: meshes.add(Mesh::from(&Path::from(&search))),

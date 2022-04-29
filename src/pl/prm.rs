@@ -12,7 +12,7 @@ pub struct PRM {
 }
 
 impl PRM {
-    pub fn with_num_samples(state_space: CuboidSpace, num_samples: usize, edge_len: f32) -> Self {
+    pub fn with_num_samples(state_space: &CuboidSpace, num_samples: usize, edge_len: f32) -> Self {
         let mut rng = thread_rng();
         let state_samples: Vec<Point3<f32>> = (&mut rng)
             .sample_iter(Standard)
