@@ -1,16 +1,16 @@
-# sanity check
-- [ ] Small, simple, clear, independent problems rather than a big problem. Increment problem as we go.
-- [ ] Useful, usable, rigourously understood solutions (proofs, guarantees (correctness, time, space usage, ...), bounds, ...).
-- [ ] Make a running system and iterate.
-- [ ] Reusable, composable.
-- [ ] Scalable (give bounds), Parallelize (when possible).
-- [ ] Visualizable.
-- [ ] Testable, get lots of good testcases.
-- [ ] Test on datasets
-- [ ] Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
-- [ ] Teachable to others, learnable by others.
-- [ ] Implement it in Rust and other good langagues (try to avoid C++).
-- [ ] Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough. Immediate mode is probably fast enough.
+# description
+- Small, simple, clear, independent problems rather than a big problem. Increment problem as we go.
+- Useful, usable, rigourously understood solutions (proofs, guarantees (correctness, time, space usage, ...), bounds, ...).
+- Make a running system and iterate.
+- Reusable, composable.
+- Scalable (give bounds), Parallelize (when possible).
+- Visualizable.
+- Testable, get lots of good testcases.
+- Test on datasets
+- Think of physical manifestations, larger effects on yourself, society, ecosystem, everything and everyone.
+- Teachable to others, learnable by others.
+- Implement it in Rust and other good langagues (try to avoid C++).
+- Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough. Immediate mode is probably fast enough.
 
 - `Vis`
 - `State`, `StateSpace`
