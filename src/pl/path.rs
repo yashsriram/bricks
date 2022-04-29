@@ -1,4 +1,4 @@
-use super::search::SpanningTreeView;
+use super::search::CostGuidedTreeSearchResult;
 use bevy::render::mesh::{Indices, Mesh};
 use bevy::render::pipeline::PrimitiveTopology;
 use nalgebra::Point3;
@@ -14,8 +14,8 @@ impl Path {
     }
 }
 
-impl<'a> From<&SpanningTreeView<'a>> for Path {
-    fn from(ts: &SpanningTreeView<'a>) -> Path {
+impl<'a> From<&CostGuidedTreeSearchResult<'a>> for Path {
+    fn from(ts: &CostGuidedTreeSearchResult<'a>) -> Path {
         let vertices = match ts.path_to_stop() {
             None => vec![],
             Some(path) => path

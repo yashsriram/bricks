@@ -3,10 +3,7 @@ use bricks::{
     pl::{
         path::Path,
         prm::PRM,
-        search::{
-            AStarLike, BFSLike, CostGuidedSpanningTreeSearch, DFSLike, UCSLike, W2AStarLike,
-            WeightedAStarLike,
-        },
+        search::{AStar, AStarWeighted2, CostGuidedWaveTreeSearch, WeightableAStar, BFS, DFS, UCS},
         spaces::CuboidSpace,
     },
     vz::{BasePlugins, NON_FILL_PIPELINE},
@@ -30,12 +27,12 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         1.0,
     );
     let searches = [
-        DFSLike::try_on(&prm.graph, a, b),
-        BFSLike::try_on(&prm.graph, a, b),
-        UCSLike::try_on(&prm.graph, a, b),
-        AStarLike::try_on(&prm.graph, a, b),
-        WeightedAStarLike::<11, 10>::try_on(&prm.graph, a, b),
-        W2AStarLike::try_on(&prm.graph, a, b),
+        DFS::try_on(&prm.graph, a, b),
+        BFS::try_on(&prm.graph, a, b),
+        UCS::try_on(&prm.graph, a, b),
+        AStar::try_on(&prm.graph, a, b),
+        WeightableAStar::<11, 10>::try_on(&prm.graph, a, b),
+        AStarWeighted2::try_on(&prm.graph, a, b),
     ];
     commands.spawn_bundle(MeshBundle {
         mesh: meshes.add(Mesh::from(&space)),

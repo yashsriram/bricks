@@ -12,25 +12,18 @@ use std::{
 };
 
 #[derive(Debug)]
-pub struct SpanningTreeView<'a> {
+pub struct CostGuidedTreeSearchResult<'a> {
     pub(crate) graph: &'a Graph,
     start_idx: usize,
     stop_idx: usize,
+    reached: bool,
     pub(crate) parent_map: HashMap<usize, Option<usize>>,
     pub(crate) fringe: HashSet<usize>,
 }
 
-impl<'a> SpanningTreeView<'a> {
-    pub fn start_idx(&self) -> usize {
-        self.start_idx
-    }
-
-    pub fn stop_idx(&self) -> usize {
-        self.stop_idx
-    }
-
-    pub fn max_idx(&self) -> usize {
-        self.graph.vertices.len() - 1
+impl<'a> CostGuidedTreeSearchResult<'a> {
+    pub fn sucess(&self) -> bool {
+        self.reached
     }
 
     pub fn path_to_stop(&self) -> Option<Vec<usize>> {
@@ -38,7 +31,7 @@ impl<'a> SpanningTreeView<'a> {
     }
 
     pub fn path_to(&self, goal_idx: usize) -> Option<Vec<usize>> {
-        assert!(goal_idx <= self.max_idx());
+        assert!(goal_idx <= self.graph.vertices.len() - 1);
         if goal_idx == self.start_idx {
             return Some(vec![self.start_idx]);
         }
@@ -56,8 +49,8 @@ impl<'a> SpanningTreeView<'a> {
     }
 }
 
-impl<'a> From<&SpanningTreeView<'a>> for Mesh {
-    fn from(spanning_tree_view: &SpanningTreeView<'a>) -> Self {
+impl<'a> From<&CostGuidedTreeSearchResult<'a>> for Mesh {
+    fn from(spanning_tree_view: &CostGuidedTreeSearchResult<'a>) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineList);
         let flattened_tree: Vec<usize> = spanning_tree_view
             .parent_map
@@ -83,9 +76,9 @@ impl<'a> From<&SpanningTreeView<'a>> for Mesh {
         let vertex_colors: Vec<[f32; 4]> = flattened_tree
             .iter()
             .map(|idx| {
-                if *idx == spanning_tree_view.start_idx() {
+                if *idx == spanning_tree_view.start_idx {
                     [1.0, 1.0, 0.0, 1.0]
-                } else if *idx == spanning_tree_view.stop_idx() {
+                } else if *idx == spanning_tree_view.stop_idx {
                     [0.0, 1.0, 0.0, 1.0]
                 } else if spanning_tree_view.fringe.contains(idx) {
                     [0.0, 1.0, 1.0, 1.0]
@@ -99,7 +92,7 @@ impl<'a> From<&SpanningTreeView<'a>> for Mesh {
     }
 }
 
-pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
+pub trait CostGuidedWaveTreeSearch<Cost: Ord>: Debug + Sized {
     fn as_start(my_vertex_state: &Point3<f32>, stop_vertex_state: &Point3<f32>) -> Self;
 
     fn as_adj(
@@ -111,7 +104,11 @@ pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
 
     fn cost(&self) -> Cost;
 
-    fn try_on<'a>(graph: &'a Graph, start_idx: usize, stop_idx: usize) -> SpanningTreeView<'a> {
+    fn try_on<'a>(
+        graph: &'a Graph,
+        start_idx: usize,
+        stop_idx: usize,
+    ) -> CostGuidedTreeSearchResult<'a> {
         Self::try_on_with_alloc(graph, start_idx, stop_idx, 1.0)
     }
 
@@ -120,7 +117,7 @@ pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
         start_idx: usize,
         stop_idx: usize,
         initial_alloc_frac: f32,
-    ) -> SpanningTreeView<'a> {
+    ) -> CostGuidedTreeSearchResult<'a> {
         assert!(start_idx < graph.vertices.len());
         assert!(stop_idx < graph.vertices.len());
         assert!(initial_alloc_frac >= 0.0);
@@ -167,7 +164,18 @@ pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
         tree.insert(start_idx, start_search_state);
         while let Some(Reverse(CostOrdAndIndex { idx: curr_idx, .. })) = fringe.pop() {
             if curr_idx == stop_idx {
-                break;
+                return CostGuidedTreeSearchResult {
+                    graph,
+                    start_idx,
+                    stop_idx,
+                    parent_map,
+                    fringe: fringe
+                        .into_sorted_vec()
+                        .into_iter()
+                        .map(|Reverse(CostOrdAndIndex { idx, .. })| idx)
+                        .collect(),
+                    reached: true,
+                };
             }
             for &adj_idx in graph.vertices[curr_idx].adjacencies.iter() {
                 if let None = tree.get(&adj_idx) {
@@ -186,7 +194,7 @@ pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
                 }
             }
         }
-        SpanningTreeView {
+        CostGuidedTreeSearchResult {
             graph,
             start_idx,
             stop_idx,
@@ -196,16 +204,17 @@ pub trait CostGuidedSpanningTreeSearch<Cost: Ord>: Debug + Sized {
                 .into_iter()
                 .map(|Reverse(CostOrdAndIndex { idx, .. })| idx)
                 .collect(),
+            reached: false,
         }
     }
 }
 
 #[derive(Debug)]
-pub struct DFSLike {
+pub struct DFS {
     order: isize,
 }
 
-impl CostGuidedSpanningTreeSearch<isize> for DFSLike {
+impl CostGuidedWaveTreeSearch<isize> for DFS {
     fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
         Self { order: -0 }
     }
@@ -222,11 +231,11 @@ impl CostGuidedSpanningTreeSearch<isize> for DFSLike {
 }
 
 #[derive(Debug)]
-pub struct BFSLike {
+pub struct BFS {
     jumps_from_start: usize,
 }
 
-impl CostGuidedSpanningTreeSearch<usize> for BFSLike {
+impl CostGuidedWaveTreeSearch<usize> for BFS {
     fn as_start(_: &Point3<f32>, _: &Point3<f32>) -> Self {
         Self {
             jumps_from_start: 0,
@@ -245,13 +254,13 @@ impl CostGuidedSpanningTreeSearch<usize> for BFSLike {
 }
 
 #[derive(Debug)]
-pub struct WeightedAStarLike<const NUM: usize, const DEN: usize> {
+pub struct WeightableAStar<const NUM: usize, const DEN: usize> {
     dist_from_start: f32,
     total_cost: f32,
 }
 
-impl<const NUM: usize, const DEN: usize> CostGuidedSpanningTreeSearch<OrderedFloat<f32>>
-    for WeightedAStarLike<NUM, DEN>
+impl<const NUM: usize, const DEN: usize> CostGuidedWaveTreeSearch<OrderedFloat<f32>>
+    for WeightableAStar<NUM, DEN>
 {
     fn as_start(my_vertex_state: &Point3<f32>, stop_vertex_state: &Point3<f32>) -> Self {
         Self {
@@ -279,6 +288,6 @@ impl<const NUM: usize, const DEN: usize> CostGuidedSpanningTreeSearch<OrderedFlo
     }
 }
 
-pub type UCSLike = WeightedAStarLike<0, 1>;
-pub type AStarLike = WeightedAStarLike<1, 1>;
-pub type W2AStarLike = WeightedAStarLike<2, 1>;
+pub type UCS = WeightableAStar<0, 1>;
+pub type AStar = WeightableAStar<1, 1>;
+pub type AStarWeighted2 = WeightableAStar<2, 1>;
