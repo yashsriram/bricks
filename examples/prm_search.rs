@@ -9,7 +9,7 @@ use bricks::{
             },
             CostGuidedSpanningTreeSearch,
         },
-        CuboidSpace,
+        spaces::CuboidSpace,
     },
     vz::{BasePlugins, NON_FILL_PIPELINE},
 };

@@ -1,7 +1,5 @@
-use crate::pl::{
-    graph::{Graph, Vertex},
-    CuboidSpace,
-};
+use super::spaces::CuboidSpace;
+use crate::pl::graph::{Graph, Vertex};
 use nalgebra::Point3;
 use rand::distributions::Standard;
 use rand::{thread_rng, Rng};
