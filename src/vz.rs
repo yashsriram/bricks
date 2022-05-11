@@ -16,6 +16,9 @@ impl PluginGroup for BasePlugins {
         group.add(bevy::window::WindowPlugin::default());
         group.add(bevy::asset::AssetPlugin::default());
         group.add(bevy::render::RenderPlugin::default());
+        // group.add(bevy::text::TextPlugin::default());
+        // group.add(bevy::sprite::SpritePlugin::default());
+        // group.add(bevy::ui::UiPlugin::default());
         group.add(bevy::winit::WinitPlugin::default());
         group.add(WGPUOptionsPlugin);
         group.add(bevy::wgpu::WgpuPlugin::default());
@@ -57,6 +60,7 @@ impl Plugin for CameraPlugin {
 }
 
 fn init_camera(mut commands: Commands) {
+    // commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands
         .spawn_bundle(PerspectiveCameraBundle {
             transform: Transform::from_xyz(0.0, 0.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
