@@ -1,12 +1,14 @@
 use bevy::{
+    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
     render::{mesh::Indices, pipeline::PrimitiveTopology},
+    wgpu::{WgpuFeature, WgpuFeatures, WgpuOptions},
 };
-use bricks::vz::{BasePlugins, NON_FILL_PIPELINE};
+use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
+use bricks::vz::{MinimalRenderPlugin, NON_FILL_PIPELINE};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{f32::consts::PI, net::TcpStream};
-use std::{thread, time};
 use tungstenite::{connect, stream::MaybeTlsStream, Message, WebSocket};
 use url::Url;
 
@@ -80,51 +82,110 @@ impl From<TreeSnapshot> for Mesh {
 }
 
 fn main() {
-    let url = Url::parse(URL).unwrap();
-    let (socket, http_response) = connect(url).unwrap();
-    println!("{:?}", http_response);
     App::build()
-        .add_plugins(BasePlugins)
-        .insert_resource(socket)
-        .add_startup_system(ask_and_vis.system())
-        .run();
-}
-
-fn ask_and_vis(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut socket: ResMut<WebSocket<MaybeTlsStream<TcpStream>>>,
-    asset_server: Res<AssetServer>,
-) {
-    println!("*");
-    meshes.clear();
-    let command = Message::Text(COMMAND.into());
-    socket.write_message(command).unwrap();
-    let event = socket.read_message().unwrap().to_string();
-    let parsed = serde_json::from_str::<Value>(&event).unwrap();
-    let data = parsed["payload"]["tree_snapshot"]["data"].clone();
-    if let Ok(snapshot) = serde_json::from_value::<TreeSnapshot>(data) {
-        println!("{:?}", snapshot);
-        commands.spawn_bundle(MeshBundle {
-            mesh: meshes.add(Mesh::from(snapshot)),
-            render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+        .add_plugin(bevy::core::CorePlugin::default())
+        .add_plugin(bevy::transform::TransformPlugin::default())
+        .add_plugin(bevy::diagnostic::DiagnosticsPlugin::default())
+        .add_plugin(bevy::input::InputPlugin::default())
+        .add_plugin(bevy::window::WindowPlugin::default())
+        .add_plugin(bevy::asset::AssetPlugin::default())
+        .add_plugin(bevy::render::RenderPlugin::default())
+        .add_plugin(bevy::text::TextPlugin::default())
+        .add_plugin(bevy::sprite::SpritePlugin::default())
+        .add_plugin(bevy::ui::UiPlugin::default())
+        .add_plugin(bevy::winit::WinitPlugin::default())
+        .insert_resource(WgpuOptions {
+            features: WgpuFeatures {
+                features: vec![WgpuFeature::NonFillPolygonMode],
+            },
             ..Default::default()
-        });
-    }
-    // let text_style = TextStyle {
-    //     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-    //     font_size: 60.0,
-    //     color: Color::WHITE,
-    // };
-    // commands.spawn_bundle(Text2dBundle {
-    //     text: Text::with_section(
-    //         "translation",
-    //         text_style.clone(),
-    //         TextAlignment {
-    //             vertical: VerticalAlign::Center,
-    //             horizontal: HorizontalAlign::Center,
-    //         },
-    //     ),
-    //     ..Default::default()
-    // });
+        })
+        .add_plugin(bevy::wgpu::WgpuPlugin::default())
+        .add_plugin(MinimalRenderPlugin)
+        .add_startup_system(
+            (|mut commands: Commands| {
+                commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+            })
+            .system(),
+        )
+        // .add_startup_system(
+        //     (|mut commands: Commands| {
+        //         commands
+        //             .spawn_bundle(PerspectiveCameraBundle {
+        //                 transform: Transform::from_xyz(0.0, 0.0, 10.0)
+        //                     .looking_at(Vec3::ZERO, Vec3::Y),
+        //                 ..Default::default()
+        //             })
+        //             .insert(FlyCamera {
+        //                 key_up: KeyCode::E,
+        //                 key_down: KeyCode::Q,
+        //                 ..Default::default()
+        //             });
+        //     })
+        //     .system(),
+        // )
+        // .add_plugin(FlyCameraPlugin)
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_system(
+            (|diagnostics: Res<Diagnostics>, mut windows: ResMut<Windows>| {
+                let window = windows.get_primary_mut().unwrap();
+                window.set_title(format!(
+                    "Δt: {:.3}s",
+                    diagnostics
+                        .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
+                        .unwrap()
+                        .average()
+                        .unwrap_or(0.0),
+                ));
+            })
+            .system(),
+        )
+        .insert_resource(Msaa { samples: 1 })
+        .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
+        // .insert_resource({
+        //     let url = Url::parse(URL).unwrap();
+        //     let (socket, http_response) = connect(url).unwrap();
+        //     println!("{:?}", http_response);
+        //     socket
+        // })
+        .add_startup_system(
+            (|mut commands: Commands,
+              mut meshes: ResMut<Assets<Mesh>>,
+              // mut socket: ResMut<WebSocket<MaybeTlsStream<TcpStream>>>,
+              asset_server: Res<AssetServer>| {
+                println!("*");
+                // meshes.clear();
+                // let command = Message::Text(COMMAND.into());
+                // socket.write_message(command).unwrap();
+                // let event = socket.read_message().unwrap().to_string();
+                // let parsed = serde_json::from_str::<Value>(&event).unwrap();
+                // let data = parsed["payload"]["tree_snapshot"]["data"].clone();
+                // if let Ok(snapshot) = serde_json::from_value::<TreeSnapshot>(data) {
+                //     println!("{:?}", snapshot);
+                //     commands.spawn_bundle(MeshBundle {
+                //         mesh: meshes.add(Mesh::from(snapshot)),
+                //         render_pipelines: RenderPipelines::from_handles(&[NON_FILL_PIPELINE.typed()]),
+                //         ..Default::default()
+                //     });
+                // }
+                let text_style = TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 60.0,
+                    color: Color::WHITE,
+                };
+                commands.spawn_bundle(Text2dBundle {
+                    text: Text::with_section(
+                        "translation",
+                        text_style.clone(),
+                        TextAlignment {
+                            vertical: VerticalAlign::Center,
+                            horizontal: HorizontalAlign::Center,
+                        },
+                    ),
+                    ..Default::default()
+                });
+            })
+            .system(),
+        )
+        .run();
 }

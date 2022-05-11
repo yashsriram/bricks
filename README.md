@@ -11,6 +11,8 @@
 - Teachable to others, learnable by others.
 - Implement it in Rust and other good langagues (try to avoid C++).
 - Cycle time = Update + Draw, each is non-zero; Don't blindly chase FPS, see the big picture, you might already be fast enough. Immediate mode is probably fast enough.
+- Demo/Test directed development.
+- Demos instead of checkboxes as roadmap.
 
 - `Vis`
 - `State`, `StateSpace`
