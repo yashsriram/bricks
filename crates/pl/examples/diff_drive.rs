@@ -7,8 +7,10 @@ use bevy::{
     },
     wgpu::{WgpuFeature, WgpuFeatures, WgpuOptions},
 };
-use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
-use bricks::vz::*;
+use bevy_fly_camera::{FlyCamera2d, FlyCameraPlugin};
+use rand::{thread_rng, Rng};
+use vz;
+use vz::*;
 
 #[derive(Debug)]
 struct DiffDrive {
@@ -16,60 +18,65 @@ struct DiffDrive {
 }
 
 impl DiffDrive {
-    const V: f32 = 0.1;
-    const W: f32 = 0.2;
-    const DELTA_T: f32 = 0.2;
+    const POLYGON_SIZE: usize = 18;
 
-    fn update(transform: &mut Transform) {
-        let (axis, orient_in_rad) = transform.rotation.to_axis_angle();
-        transform.translation.x += DiffDrive::V * orient_in_rad.cos() * DiffDrive::DELTA_T;
-        transform.translation.y += DiffDrive::V * orient_in_rad.sin() * DiffDrive::DELTA_T;
-        transform.rotation *= Quat::from_rotation_z(DiffDrive::W * DiffDrive::DELTA_T);
+    fn update(transform: &mut Transform, v: f32, w: f32, dt: f32) {
+        let (axis, angle) = transform.rotation.to_axis_angle();
+        let orient_in_rad = axis.z.signum() * angle;
+        transform.translation.x += v * orient_in_rad.cos() * dt;
+        transform.translation.y += v * orient_in_rad.sin() * dt;
+        transform.rotation *= Quat::from_rotation_z(w * dt);
     }
 }
 
 impl From<&DiffDrive> for Mesh {
     fn from(diff_drive: &DiffDrive) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
-        let num_partitions: usize = 18;
-        let mut positions: Vec<[f32; 3]> = (0..=num_partitions)
-            .map(|i| 2.0 * std::f32::consts::PI / num_partitions as f32 * i as f32)
-            .map(|theta| {
-                [
-                    diff_drive.radius * theta.cos(),
-                    diff_drive.radius * theta.sin(),
-                    0.0,
-                ]
-            })
-            .collect();
-        positions.push([0.0, 0.0, 0.0]);
-        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
-        let indices = Indices::U32((0..=(num_partitions + 1)).map(|i| i as u32).collect());
-        mesh.set_indices(Some(indices));
-        let colors = vec![[1.0, 1.0, 0.0, 0.1]; num_partitions + 2];
-        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, {
+            let mut positions: Vec<[f32; 3]> = (0..=DiffDrive::POLYGON_SIZE)
+                .map(|i| 2.0 * std::f32::consts::PI / DiffDrive::POLYGON_SIZE as f32 * i as f32)
+                .map(|theta| {
+                    [
+                        diff_drive.radius * theta.cos(),
+                        diff_drive.radius * theta.sin(),
+                        0.0,
+                    ]
+                })
+                .collect();
+            positions.push([0.0, 0.0, 0.0]);
+            positions
+        });
+        mesh.set_attribute(
+            Mesh::ATTRIBUTE_COLOR,
+            vec![[1.0, 1.0, 1.0, 1.0]; DiffDrive::POLYGON_SIZE + 2],
+        );
+        mesh.set_indices(Some(Indices::U32(
+            (0..=(DiffDrive::POLYGON_SIZE + 1))
+                .map(|i| i as u32)
+                .collect(),
+        )));
         mesh
     }
 }
 
-struct Path;
+struct Path {
+    len: usize,
+}
 
 impl Path {
-    fn add_point(mesh: &mut Mesh, x: f32, y: f32, z: f32) {
-        if let Some(VertexAttributeValues::Float3(ref mut positions)) =
+    fn add_point(&self, mesh: &mut Mesh, point: [f32; 3]) {
+        if let Some(VertexAttributeValues::Float3(ref mut vec)) =
             mesh.attribute_mut(Mesh::ATTRIBUTE_POSITION)
         {
-            positions.push([x, y, z]);
+            vec.push(point);
         }
-        if let Some(VertexAttributeValues::Float4(ref mut colors)) =
+        if let Some(VertexAttributeValues::Float4(ref mut vec)) =
             mesh.attribute_mut(Mesh::ATTRIBUTE_COLOR)
         {
-            colors.push([1.0, 1.0, 1.0, 1.0]);
+            vec.push([1.0, 1.0, 1.0, 0.2]);
         }
-        if let Some(ref mut indices) = mesh.indices_mut() {
-            if let Indices::U32(ref mut indices) = indices {
-                indices.push(indices.len() as u32);
-            }
+        if let Some(Indices::U32(ref mut vec)) = mesh.indices_mut() {
+            vec.push(vec.len() as u32);
         }
     }
 }
@@ -78,9 +85,8 @@ impl From<&Path> for Mesh {
     fn from(_: &Path) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::LineStrip);
         mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0.0, 0.0, 0.0]]);
+        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, vec![[0.0, 0.0, 1.0, 0.1]]);
         mesh.set_indices(Some(Indices::U32(vec![0])));
-        let colors = vec![[1.0, 1.0, 1.0, 0.1]];
-        mesh.set_attribute(Mesh::ATTRIBUTE_COLOR, colors);
         mesh
     }
 }
@@ -94,9 +100,6 @@ fn main() {
         .add_plugin(bevy::window::WindowPlugin::default())
         .add_plugin(bevy::asset::AssetPlugin::default())
         .add_plugin(bevy::render::RenderPlugin::default())
-        .add_plugin(bevy::text::TextPlugin::default())
-        .add_plugin(bevy::sprite::SpritePlugin::default())
-        .add_plugin(bevy::ui::UiPlugin::default())
         .add_plugin(bevy::winit::WinitPlugin::default())
         .insert_resource(WgpuOptions {
             features: WgpuFeatures {
@@ -109,16 +112,8 @@ fn main() {
         .add_startup_system(
             (|mut commands: Commands| {
                 commands
-                    .spawn_bundle(PerspectiveCameraBundle {
-                        transform: Transform::from_xyz(0.0, 0.0, 10.0)
-                            .looking_at(Vec3::ZERO, Vec3::Y),
-                        ..Default::default()
-                    })
-                    .insert(FlyCamera {
-                        key_up: KeyCode::E,
-                        key_down: KeyCode::Q,
-                        ..Default::default()
-                    });
+                    .spawn_bundle(OrthographicCameraBundle::new_2d())
+                    .insert(FlyCamera2d::default());
             })
             .system(),
         )
@@ -128,9 +123,14 @@ fn main() {
             (|diagnostics: Res<Diagnostics>, mut windows: ResMut<Windows>| {
                 let window = windows.get_primary_mut().unwrap();
                 window.set_title(format!(
-                    "Δt: {:.3}s",
+                    "{:.3}s({:.0}Hz)",
                     diagnostics
                         .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
+                        .unwrap()
+                        .average()
+                        .unwrap_or(0.0),
+                    diagnostics
+                        .get(FrameTimeDiagnosticsPlugin::FPS)
                         .unwrap()
                         .average()
                         .unwrap_or(0.0),
@@ -142,7 +142,7 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_startup_system(
             (|mut commands: Commands, mut mesh_assets: ResMut<Assets<Mesh>>| {
-                let diff_drive = DiffDrive { radius: 2.0 };
+                let diff_drive = DiffDrive { radius: 10.0 };
                 commands
                     .spawn_bundle(MeshBundle {
                         mesh: mesh_assets.add(Mesh::from(&diff_drive)),
@@ -153,7 +153,7 @@ fn main() {
                         ..Default::default()
                     })
                     .insert(diff_drive);
-                let path = Path;
+                let path = Path { len: 200 };
                 commands
                     .spawn_bundle(MeshBundle {
                         mesh: mesh_assets.add(Mesh::from(&path)),
@@ -171,16 +171,24 @@ fn main() {
             (|mut mesh_assets: ResMut<Assets<Mesh>>,
               mut diff_drive_query: Query<(&DiffDrive, &mut Transform)>,
               mut path_query: Query<(&Path, &Handle<Mesh>)>| {
+                let mut rng = thread_rng();
                 let (_, mut diff_drive_transform) = diff_drive_query.single_mut().unwrap();
-                DiffDrive::update(&mut *diff_drive_transform);
+                DiffDrive::update(
+                    &mut *diff_drive_transform,
+                    rng.gen_range(50.0..80.0),
+                    rng.gen_range(-5.0..1.5),
+                    0.1,
+                );
 
-                let (_, path_mesh_handle) = path_query.single_mut().unwrap();
+                let (path, path_mesh_handle) = path_query.single_mut().unwrap();
                 let mesh = mesh_assets.get_mut(path_mesh_handle).unwrap();
-                Path::add_point(
+                path.add_point(
                     mesh,
-                    diff_drive_transform.translation.x,
-                    diff_drive_transform.translation.y,
-                    diff_drive_transform.translation.z,
+                    [
+                        diff_drive_transform.translation.x,
+                        diff_drive_transform.translation.y,
+                        diff_drive_transform.translation.z,
+                    ],
                 );
             })
             .system(),

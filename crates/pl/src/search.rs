@@ -1,4 +1,4 @@
-use crate::pl::graph::Graph;
+use crate::graph::Graph;
 use bevy::render::{
     mesh::{Indices, Mesh},
     pipeline::PrimitiveTopology,

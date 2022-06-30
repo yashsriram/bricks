@@ -16,7 +16,6 @@
 
 - `Vis`
 - `State`, `StateSpace`
-    - [x] SphereSpace (sqrt?)
 - `Graph` on a `StateSpace`; Vertex = (`StateSpace::State`,  `Set<VertexIdx>`)
 - `TreeSearch` on `Graph`
     - [x] start, stop, goal, max idxs

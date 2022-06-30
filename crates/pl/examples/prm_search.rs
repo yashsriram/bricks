@@ -4,16 +4,14 @@ use bevy::{
     wgpu::{WgpuFeature, WgpuFeatures, WgpuOptions},
 };
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
-use bricks::{
-    pl::{
-        path::Path,
-        prm::PRM,
-        search::{AStar, AStarWeighted2, CostGuidedWaveTreeSearch, WeightableAStar, BFS, DFS, UCS},
-        spaces::CuboidSpace,
-    },
-    vz::{MinimalRenderPlugin, NON_FILL_PIPELINE},
-};
 use nalgebra::{Point3, Vector3};
+use pl::{
+    path::Path,
+    prm::PRM,
+    search::{AStar, AStarWeighted2, CostGuidedWaveTreeSearch, WeightableAStar, BFS, DFS, UCS},
+    spaces::CuboidSpace,
+};
+use vz::{MinimalRenderPlugin, NON_FILL_PIPELINE};
 
 fn main() {
     App::build()
