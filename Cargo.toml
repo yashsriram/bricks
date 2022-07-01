@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "crates/dy",
     "crates/pl",
-    "crates/vz"
+    "crates/vz",
 ]
