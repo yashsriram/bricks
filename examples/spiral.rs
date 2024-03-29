@@ -8,27 +8,14 @@ fn algo(inp: Res<Inp>, mut output: ResMut<Outp>, keyboard: Res<Input<KeyCode>>) 
             .reduce(|left_most, v| if v.x < left_most.x { v } else { left_most })
             .map(|e| *e)
             .unwrap_or(Vec2::ZERO);
-        let finish = inp
-            .points
-            .iter()
-            .filter(|v| **v != start)
-            .reduce(|all_on_left, v| {
-                let cross = (*all_on_left - start)
-                    .extend(0.0)
-                    .cross((*v - start).extend(0.0));
-                if cross.z < 0. {
-                    v
-                } else {
-                    all_on_left
-                }
-            })
-            .map(|e| *e)
-            .unwrap_or(Vec2::ZERO);
-        let mut hull: Vec<_> = vec![start];
+        let mut spiral: Vec<_> = vec![start];
         let mut rem: Vec<_> = inp.points.clone();
         loop {
-            let last = *hull.last().unwrap();
+            let last = *spiral.last().unwrap();
             rem = rem.into_iter().filter(|v| *v != last).collect();
+            if rem.len() == 0 {
+                break;
+            }
             let next = rem
                 .clone()
                 .into_iter()
@@ -42,13 +29,9 @@ fn algo(inp: Res<Inp>, mut output: ResMut<Outp>, keyboard: Res<Input<KeyCode>>) 
                 })
                 .map(|e| e)
                 .unwrap_or(Vec2::ZERO);
-            hull.push(next);
-            if next == finish {
-                hull.push(start);
-                break;
-            }
+            spiral.push(next);
         }
-        output.line = hull;
+        output.line = spiral;
     }
 }
 
