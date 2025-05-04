@@ -8,8 +8,8 @@ macro_rules! game_2d {
             let mut app = App::new();
             app.add_plugins(DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    resolution: (800.0, 450.0).into(),
-                    title: "bricks".into(),
+                    resolution: (500.0, 500.0).into(),
+                    title: $title.into(),
                     canvas: Some("#interactive".into()),
                     fit_canvas_to_parent: true,
                     prevent_default_event_handling: false,

@@ -49,7 +49,7 @@ impl Default for MAP {
     fn default() -> Self {
         MAP {
             mean: 0.,
-            std_dev: 0.,
+            std_dev: 1.,
             x_start: -500.,
             x_stop: 500.,
         }
