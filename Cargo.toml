@@ -6,6 +6,13 @@ edition = "2021"
 [dependencies]
 rand = "0.8.5"
 ordered-float = "2.8.0"
+# ndarray with proper BLAS binding, because ndarray-linalg automatically wants to use BLAS
+# Need `libopenblas-{openmp,pthread,serial}-dev` deb for ubuntu for openblas impl
+# It can be other names in other distributions, e.g. Fedora, ArchLinux, and so on.
+ndarray = { version = "0.16.0", features = ["blas"] }
+blas-src = { version = "0.10", features = ["openblas"] }
+openblas-src = { version = "0.10", features = ["cblas", "system"] }
+ndarray-linalg = { version = "0.17", features = ["openblas-system"] }
 
 [dependencies.bevy]
 version = "0.15.3"
