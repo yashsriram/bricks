@@ -133,7 +133,7 @@ bricks::game_2d! {
     }
 }
 
-fn init(mut commands: Commands, mut terrain: ResMut<Terrain>) {
+fn init(mut commands: Commands) {
     commands.spawn(Camera2d::default());
 }
 
@@ -148,20 +148,23 @@ fn update_and_draw_agent(mut gizmos: Gizmos, mut agent: ResMut<Agent>, terrain: 
     if terrain.at(agent.x).is_some() {
         agent.propagate();
     }
+    // agent
     gizmos.circle_2d(
         Isometry2d::from_xy(agent.x, agent.y),
         10.,
         Color::srgb(0., 1., 0.),
     );
+    // path
     gizmos.line_2d(
         [terrain.x_start, agent.y].into(),
         [terrain.x_stop, agent.y].into(),
         Color::srgba(0., 1., 0., 0.5),
     );
+    // measurement
     gizmos.line_2d(
         [agent.x, agent.y].into(),
         [agent.x, terrain.at(agent.x).unwrap_or_default()].into(),
-        Color::srgba(0., 1., 0., 0.5),
+        Color::srgba(0., 1., 1., 0.5),
     );
     gizmos.line_2d(
         [terrain.x_start, terrain.at(agent.x).unwrap_or_default()].into(),
@@ -182,7 +185,7 @@ fn update_and_draw_particles(
         partices.resample();
     }
 
-    for (x, weight) in partices.xs_and_weights.iter() {
+    for (x, _) in partices.xs_and_weights.iter() {
         gizmos.circle_2d(
             Isometry2d::from_xy(*x, agent.y),
             5.,
@@ -196,15 +199,18 @@ fn update_and_draw_particles(
     }
 }
 
-fn on_spacebar_press(
+fn on_spacebar_press() {}
+
+fn on_mouse_click(
+    In(point): In<Result<Vec2, ()>>,
+
     terrain: Res<Terrain>,
     mut agent: ResMut<Agent>,
     mut partices: ResMut<Particles>,
 ) {
-    agent.x = terrain.sample_x();
+    let Ok(point) = point else { return };
+    agent.x = point.x;
     agent.y = 200.;
 
     partices.on_terrain(terrain);
 }
-
-fn on_mouse_click(In(point): In<Result<Vec2, ()>>) {}
